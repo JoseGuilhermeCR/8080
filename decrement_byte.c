@@ -14,6 +14,8 @@
 DCR_INSTR(b,B)
 DCR_INSTR(c,C)
 DCR_INSTR(d,D)
+DCR_INSTR(e,E)
+DCR_INSTR(h,H)
 
 /* Example with comments:
 INSTR(dcr_b) {

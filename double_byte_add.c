@@ -14,7 +14,8 @@
 	}
 
 DAD_INSTR(b,B,C)
-DAD_INSTR(d,D,E)	
+DAD_INSTR(d,D,E)
+DAD_INSTR(h,H,L)
 
 /*
 Example with comments:

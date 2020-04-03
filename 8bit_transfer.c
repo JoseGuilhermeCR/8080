@@ -11,6 +11,8 @@
 MVI_INSTR(b,B)
 MVI_INSTR(c,C)
 MVI_INSTR(d,D)
+MVI_INSTR(e,E)
+MVI_INSTR(h,H)
 
 /* Macro for defining the stax instructions */
 #define STAX_INSTR(r,R,R1)	\

@@ -35,3 +35,14 @@ INSTR(ral) {
 	i8080_set_flag(&emu->i8080, FLAG_C, previous_bit7);	// Carry Flag is set to previous bit 7
 }
 
+INSTR(rar) {
+	// Rotate A to the right through Carry.
+	uint8_t previous_bit7 = emu->i8080.A & 0x80;	// Save previous bit 7(No need to shift).
+	uint8_t previous_bit0 = emu->i8080.A & 0x01;
+
+	emu->i8080.A >>= 1;
+
+	emu->i8080.A |= previous_bit7;	// Bit 7 is set to previous bit 7.
+	
+	i8080_set_flag(&emu->i8080, FLAG_C, previous_bit0);	// Carry Flag is set to previous bit 0
+}

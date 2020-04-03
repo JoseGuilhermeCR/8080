@@ -12,6 +12,7 @@
 
 LXI_INSTR(b,B,C)
 LXI_INSTR(d,D,E)
+LXI_INSTR(h,H,L)
 
 /* Example with comments:
 INSTR(lxi_d) {
@@ -21,3 +22,11 @@ INSTR(lxi_d) {
 	emu->i8080.D = emu->memory[++emu->i8080.PC];
 }
 */
+
+INSTR(shld) {
+	// Places HL at memory address given in the instruction.
+	// Remember, this works in little endian!
+	uint16_t addr = (emu->memory[emu->i8080.PC + 2] << 8) | emu->memory[emu->i8080.PC + 1];
+	emu->memory[addr] = emu->i8080.L;
+	emu->memory[addr + 1] = emu->i8080.H;	
+}

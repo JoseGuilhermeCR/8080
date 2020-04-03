@@ -52,7 +52,9 @@ void (*instruction_table[0x100]) (i8080emu *emu) = {
 	NULL, lxi_b, stax_b, inx_b, inr_b, dcr_b, mvi_b, rlc,
 	NULL, dad_b, ldax_b, dcx_b, inr_c, dcr_c, mvi_c, rrc,
 	NULL, lxi_d, stax_d, inx_d, inr_d, dcr_d, mvi_d, ral,
-	NULL, dad_d, ldax_d, dcx_d, inr_e,
+	NULL, dad_d, ldax_d, dcx_d, inr_e, dcr_e, mvi_e, rar,
+	NULL, lxi_h, shld, inx_h, inr_h, dcr_h, mvi_h, NULL, /* RIM is NULL. TODO:SecondNULL DAA*/
+	NULL, dad_h
 };
 
 /* Setup functions */
@@ -68,7 +70,7 @@ i8080emu *i8080emu_create() {
 	emu->i8080.E = 0x00;
 	emu->i8080.H = 0x00;
 	emu->i8080.L = 0x00;
-	emu->i8080.PC  = 0x1d0a; //0x0000;
+	emu->i8080.PC  = 0x00b9; //0x0000;
 	emu->i8080.SP  = 0x0000;
 
 	// Allocate memory, for now 65536 bytes (max possible).

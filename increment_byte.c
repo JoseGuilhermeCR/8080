@@ -17,6 +17,7 @@ INR_INSTR(b,B)
 INR_INSTR(c,C)
 INR_INSTR(d,D)
 INR_INSTR(e,E)
+INR_INSTR(h,H)
 
 /* For example: INR_INSTR(b,B) will become (here in a more readable way and with comments):
 INSTR(inr_b) {

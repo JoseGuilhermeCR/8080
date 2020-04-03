@@ -12,6 +12,7 @@
 
 INX_INSTR(b,B,C)
 INX_INSTR(d,D,E)
+INX_INSTR(h,H,L)
 
 /*
 Example with comments:
