@@ -51,7 +51,8 @@ uint8_t parity_table[0x100] = {
 void (*instruction_table[0x100]) (i8080emu *emu) = {
 	NULL, lxi_b, stax_b, inx_b, inr_b, dcr_b, mvi_b, rlc,
 	NULL, dad_b, ldax_b, dcx_b, inr_c, dcr_c, mvi_c, rrc,
-	NULL, lxi_d, stax_d, 
+	NULL, lxi_d, stax_d, inx_d, inr_d, dcr_d, mvi_d, ral,
+	NULL, dad_d, ldax_d, dcx_d, inr_e,
 };
 
 /* Setup functions */
@@ -67,7 +68,7 @@ i8080emu *i8080emu_create() {
 	emu->i8080.E = 0x00;
 	emu->i8080.H = 0x00;
 	emu->i8080.L = 0x00;
-	emu->i8080.PC  = 0x0000; //0x0000;
+	emu->i8080.PC  = 0x1d0a; //0x0000;
 	emu->i8080.SP  = 0x0000;
 
 	// Allocate memory, for now 65536 bytes (max possible).
@@ -112,146 +113,6 @@ void i8080emu_cycle(i8080emu *emu) {
 	if (instruction_table[emu->memory[emu->i8080.PC]])
 		(*instruction_table[emu->memory[emu->i8080.PC]])(emu);
 	++emu->i8080.PC;
-}
-
-/* 8 Bit Transfer Instructions */
-INSTR(mvi_b) {
-	// Places byte in register B.
-	emu->i8080.B = emu->memory[++emu->i8080.PC];
-}
-
-INSTR(mvi_c) {
-	// Places byte in register C.
-	emu->i8080.C = emu->memory[++emu->i8080.PC];
-}
-
-INSTR(stax_b) {
-	// Moves the value stored in A to memory at (BC).
-	emu->memory[(emu->i8080.B << 8) | emu->i8080.C] = emu->i8080.A;
-}
-
-INSTR(stax_d) {
-	// Moves the value stored in A to memory at (DE).
-	emu->memory[(emu->i8080.D << 8) | emu->i8080.E] = emu->i8080.A;
-}
-
-INSTR(ldax_b) {
-	// Moves the value from memory at (BC) to A.
-	emu->i8080.A = emu->memory[++emu->i8080.PC];
-}
-
-
-/* 16 Bit Transfer Instructions */
-INSTR(lxi_b) {
-	// Places word in register pair BC.
-	// Words are in little endian (lower byte should be in C and higher in B).
-	emu->i8080.C = emu->memory[++emu->i8080.PC];
-	emu->i8080.B = emu->memory[++emu->i8080.PC];
-}
-
-INSTR(lxi_d) {
-	// Places word in register pair DE.
-	// Words are in little endian (lower byte should be in E and higher in D).
-	emu->i8080.E = emu->memory[++emu->i8080.PC];
-	emu->i8080.D = emu->memory[++emu->i8080.PC];
-}
-
-/* Increment Byte Instructions */
-INSTR(inr_b) {
-	i8080_set_flag(&emu->i8080, FLAG_A, carry_out_lower_nibble(emu->i8080.B, 1));	// Auxiliary Carry Flag.
-
-	// Increment register B.
-	++emu->i8080.B;
-
-	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.B == 0x00);			// Zero Flag.
-	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.B & 0x80);			// Sign Flag.
-	i8080_set_flag(&emu->i8080, FLAG_P, even_parity(emu->i8080.B));			// Parity Flag.
-}
-
-INSTR(inr_c) {
-	i8080_set_flag(&emu->i8080, FLAG_A, carry_out_lower_nibble(emu->i8080.C, 1));	// Auxiliary Carry Flag.
-
-	// Increment register C.
-	++emu->i8080.C;
-
-	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.C == 0x00);			// Zero Flag.
-	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.C & 0x80);			// Sign Flag.
-	i8080_set_flag(&emu->i8080, FLAG_P, even_parity(emu->i8080.C));			// Parity Flag.
-}
-
-/* Decrement Byte Instructions */
-INSTR(dcr_b) {
-	// TODO: know how the A flag should be set in a subtraction.
-	// Decrement register B.
-	--emu->i8080.B;
-
-	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.B == 0x00);			// Zero Flag.
-	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.B & 0x80);			// Sign Flag.
-	i8080_set_flag(&emu->i8080, FLAG_P, even_parity(emu->i8080.B));			// Parity Flag.
-}
-
-INSTR(dcr_c) {
-	// TODO: know how the A flag should be set in a subtraction.
-	// Decrement register C.
-	--emu->i8080.C;
-
-	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.C == 0x00);			// Zero Flag.
-	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.C & 0x80);			// Sign Flag.
-	i8080_set_flag(&emu->i8080, FLAG_P, even_parity(emu->i8080.C));			// Parity Flag.
-}
-
-/* Increment Register Pair Instructions */
-INSTR(inx_b) {
-	// Increment register pair BC
-	uint16_t BC = ((emu->i8080.B << 8) | emu->i8080.C) + 1;
-	emu->i8080.C = LB(BC);
-	emu->i8080.B = HB(BC);
-}
-
-/* Decrement Register Pair Instructions */
-INSTR(dcx_b) {
-	// Decrement register pair BC.
-	uint16_t BC = ((emu->i8080.B << 8) | emu->i8080.C) - 1;
-	emu->i8080.C = LB(BC);
-	emu->i8080.B = HB(BC);
-}
-
-/* Rotate Instructions */
-INSTR(rlc) {
-	// Rotate A to the left.
-	uint8_t previous_bit7 = (emu->i8080.A & 0x80) >> 7;	// Save previous bit 7.
-
-	emu->i8080.A <<= 1;					// Shift 1 bit to the left.
-
-	emu->i8080.A |= previous_bit7;				// Bit 0 is set to previous bit 7.
-
-	i8080_set_flag(&emu->i8080, FLAG_C, previous_bit7);	// Carry Flag.
-}
-
-INSTR(rrc) {
-	// Rotate A to the right.
-	uint8_t previous_bit0 = emu->i8080.A & 0x01;		// Save previous bit 0.
-	
-	emu->i8080.A >>= 1;					// Shift 1 bit to the right.
-	
-	emu->i8080.A |= previous_bit0 << 7;			// Bit 7 is set to previous bit 0.
-
-	i8080_set_flag(&emu->i8080, FLAG_C, previous_bit0);	// Carry Flag.
-}
-
-/* Double Byte Add Instructions */
-INSTR(dad_b) {
-	// HL += BC;
-	uint16_t HL = (emu->i8080.H << 8) | emu->i8080.L;	// Put together the values held by H and L.
-	uint16_t BC = (emu->i8080.B << 8) | emu->i8080.C;	// Same with BC.
-
-	HL += BC;
-	
-	// Put each byte in their own register.
-	emu->i8080.L = LB(HL);
-	emu->i8080.H = HB(HL);
-
-	i8080_set_flag(&emu->i8080, FLAG_C, (HL + BC) > 65535);// Carry Flag.
 }
 
 /* Help */

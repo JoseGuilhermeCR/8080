@@ -57,9 +57,11 @@ void i8080emu_cycle(i8080emu *emu);
 /* 8 Bit Transfer Instructions */
 INSTR(mvi_b);
 INSTR(mvi_c);
+INSTR(mvi_d);
 INSTR(stax_b);
 INSTR(stax_d);
 INSTR(ldax_b);
+INSTR(ldax_d);
 
 /* 16 Bit Transfer Instructions */
 INSTR(lxi_b);
@@ -68,23 +70,30 @@ INSTR(lxi_d);
 /* Increment Byte Instructions */
 INSTR(inr_b);
 INSTR(inr_c);
+INSTR(inr_d);
+INSTR(inr_e);
 
 /* Decrement Byte Instructions */
 INSTR(dcr_b);
 INSTR(dcr_c);
+INSTR(dcr_d);
 
 /* Increment Register Pair Instructions */
 INSTR(inx_b);
+INSTR(inx_d);
 
 /* Decrement Register Pair Instructions */
 INSTR(dcx_b);
+INSTR(dcx_d);
 
 /* Rotate Instructions */
 INSTR(rlc);
 INSTR(rrc);
+INSTR(ral);
 
 /* Double Byte Add Instructions */
 INSTR(dad_b);
+INSTR(dad_d);
 
 /* Help */
 bool carry_out_lower_nibble(uint8_t a, uint8_t b);
