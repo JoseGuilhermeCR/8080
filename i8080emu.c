@@ -8,19 +8,11 @@ int main(int argc, char **argv) {
 	i8080emu *i = i8080emu_create();
 	i8080emu_load_program_into_memory(i, "invaders/invaders");
 	
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
+
+	while(true) {
+		i8080emu_print_registers(i);
+		i8080emu_cycle(i);
+	}
 
 	i8080emu_destroy(i);
 
@@ -57,6 +49,14 @@ void (*instruction_table[0x100]) (i8080emu *emu) = {
 	NULL, dad_h, lhld, dcx_h, inr_l, dcr_l, mvi_l, cma,
 	NULL, lxi_sp, sta, inx_sp, inr_m, dcr_m, mvi_m, stc, /*SIM is NULL*/
 	NULL, dad_sp, lda, dcx_sp, inr_a, dcr_a, mvi_a, cmc,
+	NULL, mov_bc, mov_bd, mov_be, mov_bh, mov_bl, mov_bm, mov_ba,	/* Not including MOV R,R (where R is any Register). */
+	mov_cb, NULL, mov_cd, mov_ce, mov_ch, mov_cl, mov_cm, mov_ca,
+	mov_db, mov_dc, NULL, mov_de, mov_dh, mov_dl, mov_dm, mov_da,
+	mov_eb, mov_ec, mov_ed, NULL, mov_eh, mov_el, mov_em, mov_ea,
+	mov_hb, mov_hc, mov_hd, mov_he, NULL, mov_hl, mov_hm, mov_ha,
+	mov_lb, mov_lc, mov_ld, mov_le, mov_lh, NULL, mov_lm, mov_la,
+	mov_mb, mov_mc, mov_md, mov_me, mov_mh, mov_ml, NULL, hlt,
+	mov_ma,
 };
 
 /* Setup functions */
@@ -72,7 +72,7 @@ i8080emu *i8080emu_create() {
 	emu->i8080.E = 0x00;
 	emu->i8080.H = 0x00;
 	emu->i8080.L = 0x00;
-	emu->i8080.PC  = 0x1f19; //0x0000;
+	emu->i8080.PC  = 0x0000; //0x0000;
 	emu->i8080.SP  = 0x0000;
 
 	// Allocate memory, for now 65536 bytes (max possible).

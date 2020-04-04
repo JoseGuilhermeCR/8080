@@ -70,6 +70,62 @@ INSTR(ldax_b);
 INSTR(ldax_d);
 INSTR(lda);
 
+INSTR(mov_bc);
+INSTR(mov_bd);
+INSTR(mov_be);
+INSTR(mov_bh);
+INSTR(mov_bl);
+INSTR(mov_bm);
+INSTR(mov_ba);
+
+INSTR(mov_cb);
+INSTR(mov_cd);
+INSTR(mov_ce);
+INSTR(mov_ch);
+INSTR(mov_cl);
+INSTR(mov_cm);
+INSTR(mov_ca);
+
+INSTR(mov_db);
+INSTR(mov_dc);
+INSTR(mov_de);
+INSTR(mov_dh);
+INSTR(mov_dl);
+INSTR(mov_dm);
+INSTR(mov_da);
+
+INSTR(mov_eb);
+INSTR(mov_ec);
+INSTR(mov_ed);
+INSTR(mov_eh);
+INSTR(mov_el);
+INSTR(mov_em);
+INSTR(mov_ea);
+
+INSTR(mov_hb);
+INSTR(mov_hc);
+INSTR(mov_hd);
+INSTR(mov_he);
+INSTR(mov_hl);
+INSTR(mov_hm);
+INSTR(mov_ha);
+
+INSTR(mov_lb);
+INSTR(mov_lc);
+INSTR(mov_ld);
+INSTR(mov_le);
+INSTR(mov_lh);
+INSTR(mov_lm);
+INSTR(mov_la);
+
+INSTR(mov_mb);
+INSTR(mov_mc);
+INSTR(mov_md);
+INSTR(mov_me);
+INSTR(mov_mh);
+INSTR(mov_ml);
+INSTR(mov_ma);
+
 /* 16 Bit Transfer Instructions */
 INSTR(lxi_b);
 INSTR(lxi_d);
@@ -126,6 +182,9 @@ INSTR(dad_sp);
 INSTR(cma);
 INSTR(stc);
 INSTR(cmc);
+
+/* Constrol Instructions */
+INSTR(hlt);
 
 /* Help */
 bool carry_out_lower_nibble(uint8_t a, uint8_t b);
