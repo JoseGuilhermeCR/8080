@@ -18,6 +18,8 @@ INR_INSTR(c,C)
 INR_INSTR(d,D)
 INR_INSTR(e,E)
 INR_INSTR(h,H)
+INR_INSTR(l,L)
+INR_INSTR(a,A)
 
 /* For example: INR_INSTR(b,B) will become (here in a more readable way and with comments):
 INSTR(inr_b) {
@@ -30,3 +32,17 @@ INSTR(inr_b) {
 	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.B & 0x80);			// Sign Flag.
 	i8080_set_flag(&emu->i8080, FLAG_P, even_parity(emu->i8080.B));			// Parity Flag.
 } */
+
+INSTR(inr_m) {
+	// Increments byte at (HL).
+	// Points to the wanted byte.
+	uint8_t *byte = &emu->memory[(emu->i8080.H << 8) | emu->i8080.L];
+
+	i8080_set_flag(&emu->i8080, FLAG_A, carry_out_lower_nibble(*byte, 1));	// Auxiliary Carry Flag.
+
+	++(*byte);
+
+	i8080_set_flag(&emu->i8080, FLAG_Z, *byte == 0x00);		// Zero Flag.
+	i8080_set_flag(&emu->i8080, FLAG_S, *byte & 0x80);		// Sign Flag.
+	i8080_set_flag(&emu->i8080, FLAG_P, even_parity(*byte));	// Parity Flag.
+}

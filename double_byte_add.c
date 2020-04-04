@@ -33,3 +33,16 @@ INSTR(dad_b) {
 	i8080_set_flag(&emu->i8080, FLAG_C, (HL + register_pair) > 65535);// Carry Flag.
 }
 */
+
+INSTR(dad_sp) {
+	// HL += SP;
+	uint16_t HL = (emu->i8080.H << 8) | emu->i8080.L;	// Put together the values held by H and L.
+
+	HL += emu->i8080.SP;
+	
+	// Put each byte in their own register.
+	emu->i8080.L = LB(HL);
+	emu->i8080.H = HB(HL);
+
+	i8080_set_flag(&emu->i8080, FLAG_C, (HL + emu->i8080.SP) > 65535);// Carry Flag.
+}

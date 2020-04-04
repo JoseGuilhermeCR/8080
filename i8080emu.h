@@ -60,16 +60,23 @@ INSTR(mvi_c);
 INSTR(mvi_d);
 INSTR(mvi_e);
 INSTR(mvi_h);
+INSTR(mvi_l);
+INSTR(mvi_m);
+INSTR(mvi_a);
 INSTR(stax_b);
 INSTR(stax_d);
+INSTR(sta);
 INSTR(ldax_b);
 INSTR(ldax_d);
+INSTR(lda);
 
 /* 16 Bit Transfer Instructions */
 INSTR(lxi_b);
 INSTR(lxi_d);
 INSTR(lxi_h);
+INSTR(lxi_sp);
 INSTR(shld);
+INSTR(lhld);
 
 /* Increment Byte Instructions */
 INSTR(inr_b);
@@ -77,6 +84,9 @@ INSTR(inr_c);
 INSTR(inr_d);
 INSTR(inr_e);
 INSTR(inr_h);
+INSTR(inr_l);
+INSTR(inr_m);
+INSTR(inr_a);
 
 /* Decrement Byte Instructions */
 INSTR(dcr_b);
@@ -84,15 +94,21 @@ INSTR(dcr_c);
 INSTR(dcr_d);
 INSTR(dcr_e);
 INSTR(dcr_h);
+INSTR(dcr_l);
+INSTR(dcr_m);
+INSTR(dcr_a);
 
-/* Increment Register Pair Instructions */
+/* Increment Word Instructions */
 INSTR(inx_b);
 INSTR(inx_d);
 INSTR(inx_h);
+INSTR(inx_sp);
 
-/* Decrement Register Pair Instructions */
+/* Decrement Word Instructions */
 INSTR(dcx_b);
 INSTR(dcx_d);
+INSTR(dcx_h);
+INSTR(dcx_sp);
 
 /* Rotate Instructions */
 INSTR(rlc);
@@ -104,6 +120,12 @@ INSTR(rar);
 INSTR(dad_b);
 INSTR(dad_d);
 INSTR(dad_h);
+INSTR(dad_sp);
+
+/* Accumulator and Flag Instructions */
+INSTR(cma);
+INSTR(stc);
+INSTR(cmc);
 
 /* Help */
 bool carry_out_lower_nibble(uint8_t a, uint8_t b);

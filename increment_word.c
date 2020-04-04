@@ -1,6 +1,6 @@
 #include "i8080emu.h"
 
-/* Increment Register Pair Instructions */
+/* Increment Word Instructions */
 
 /* Macro for defining inx instructions */
 #define INX_INSTR(r,R,R1)	\
@@ -23,3 +23,7 @@ INSTR(inx_d) {
 	emu->i8080.E = HB(register_pair);
 }
 */
+
+INSTR(inx_sp) {
+	++emu->i8080.SP;
+}

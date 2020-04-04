@@ -1,6 +1,6 @@
 #include "i8080emu.h"
 
-/* Decrement Register Pair Instructions */
+/* Decrement Word Instructions */
 
 /* Macro for defining dcx instructions */
 #define DCX_INSTR(r,R,R1)	\
@@ -12,6 +12,7 @@
 
 DCX_INSTR(b,B,C)
 DCX_INSTR(d,D,E)
+DCX_INSTR(h,H,L)
 
 /*
 Example with comments:
@@ -22,3 +23,7 @@ INSTR(dcx_b) {
 	emu->i8080.B = HB(register_pair);
 }
 */
+
+INSTR(dcx_sp) {
+	--emu->i8080.SP;
+}
