@@ -8,11 +8,10 @@ int main(int argc, char **argv) {
 	i8080emu *i = i8080emu_create();
 	i8080emu_load_program_into_memory(i, "invaders/invaders");
 	
-
-	while(true) {
-		i8080emu_print_registers(i);
-		i8080emu_cycle(i);
-	}
+	
+	i8080emu_print_registers(i);
+	i8080emu_cycle(i);
+	i8080emu_print_registers(i);
 
 	i8080emu_destroy(i);
 
@@ -55,9 +54,9 @@ const void (*instruction_table[0x100]) (i8080emu *emu) = {
 	mov_eb, mov_ec, mov_ed, NULL, mov_eh, mov_el, mov_em, mov_ea,
 	mov_hb, mov_hc, mov_hd, mov_he, NULL, mov_hl, mov_hm, mov_ha,
 	mov_lb, mov_lc, mov_ld, mov_le, mov_lh, NULL, mov_lm, mov_la,
-	mov_mb, mov_mc, mov_md, mov_me, mov_mh, mov_ml, NULL, hlt,
-	mov_ma, mov_ab, mov_ac, mov_ad, mov_ae, mov_ah, mov_al, mov_am,
-	NULL, 
+	mov_mb, mov_mc, mov_md, mov_me, mov_mh, mov_ml, hlt, mov_ma,
+	mov_ab, mov_ac, mov_ad, mov_ae, mov_ah, mov_al, mov_am, NULL,
+	add_b, add_c, add_d, add_e, add_h, add_l, add_m, add_a,
 };
 
 /* Setup functions */
@@ -73,7 +72,7 @@ i8080emu *i8080emu_create() {
 	emu->i8080.E = 0x00;
 	emu->i8080.H = 0x00;
 	emu->i8080.L = 0x00;
-	emu->i8080.PC  = 0x0000; //0x0000;
+	emu->i8080.PC  = 0x1fce; //0x0000;
 	emu->i8080.SP  = 0x0000;
 
 	// Allocate memory, for now 65536 bytes (max possible).
@@ -117,6 +116,8 @@ void i8080_set_flag(i8080 *i8080, Flags flag, bool value) {
 void i8080emu_cycle(i8080emu *emu) {
 	if (instruction_table[emu->memory[emu->i8080.PC]])
 		(*instruction_table[emu->memory[emu->i8080.PC]])(emu);
+	else
+		puts("\nInstruction was null.\n");
 	++emu->i8080.PC;
 }
 

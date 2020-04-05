@@ -162,6 +162,16 @@ INSTR(dcr_l);
 INSTR(dcr_m);
 INSTR(dcr_a);
 
+/* Add Byte Instructions */
+INSTR(add_b);
+INSTR(add_c);
+INSTR(add_d);
+INSTR(add_e);
+INSTR(add_h);
+INSTR(add_l);
+INSTR(add_m);
+INSTR(add_a);
+
 /* Increment Word Instructions */
 INSTR(inx_b);
 INSTR(inx_d);
