@@ -9,7 +9,7 @@
 		++emu->i8080.R;									\
 		i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.R == 0x00);			\
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.R & 0x80);			\
-                i8080_set_flag(&emu->i8080, FLAG_P, even_parity(emu->i8080.R));			\
+                i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.R]);		\
 	}
 
 /* Increment Byte Instructions */
@@ -30,7 +30,7 @@ INSTR(inr_b) {
 
 	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.B == 0x00);			// Zero Flag.
 	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.B & 0x80);			// Sign Flag.
-	i8080_set_flag(&emu->i8080, FLAG_P, even_parity(emu->i8080.B));			// Parity Flag.
+	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.B]);		// Parity Flag.
 } */
 
 INSTR(inr_m) {
@@ -44,5 +44,5 @@ INSTR(inr_m) {
 
 	i8080_set_flag(&emu->i8080, FLAG_Z, *byte == 0x00);		// Zero Flag.
 	i8080_set_flag(&emu->i8080, FLAG_S, *byte & 0x80);		// Sign Flag.
-	i8080_set_flag(&emu->i8080, FLAG_P, even_parity(*byte));	// Parity Flag.
+	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[*byte]);	// Parity Flag.
 }

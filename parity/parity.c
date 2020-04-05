@@ -21,6 +21,6 @@ int main(int argc, char **argv) {
 		if (i % 16 == 0)
 			printf("\n");
 
-		printf("%u, ", parity);
+		printf("%u, ", (parity % 2 == 0) ? 1 : 0);
 	}
 }

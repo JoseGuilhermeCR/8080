@@ -36,8 +36,8 @@ typedef struct {
 	uint8_t *memory; // The maximum size of memory is 65536 bytes.
 } i8080emu;
 
-extern uint8_t parity_table[0x100];
-extern void (*instruction_table[0x100]) (i8080emu *emu);
+extern const uint8_t parity_table[0x100];
+extern const void (*instruction_table[0x100]) (i8080emu *emu);
 
 /* Setup Stuff. */
 i8080emu *i8080emu_create();
@@ -188,7 +188,6 @@ INSTR(hlt);
 
 /* Help */
 bool carry_out_lower_nibble(uint8_t a, uint8_t b);
-bool even_parity(uint8_t a);
 
 /* Debug Stuff. */
 void i8080emu_print_registers(i8080emu  *emu);
