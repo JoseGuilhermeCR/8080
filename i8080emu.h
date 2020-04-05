@@ -172,6 +172,36 @@ INSTR(add_l);
 INSTR(add_m);
 INSTR(add_a);
 
+/* Add Byte with Carry In Instructions */
+INSTR(adc_b);
+INSTR(adc_c);
+INSTR(adc_d);
+INSTR(adc_e);
+INSTR(adc_h);
+INSTR(adc_l);
+INSTR(adc_m);
+INSTR(adc_a);
+
+/* Sub Byte Instructions */
+INSTR(sub_b);
+INSTR(sub_c);
+INSTR(sub_d);
+INSTR(sub_e);
+INSTR(sub_h);
+INSTR(sub_l);
+INSTR(sub_m);
+INSTR(sub_a);
+
+/* Sub Byte With Borrow-In Instructions */
+INSTR(sbb_b);
+INSTR(sbb_c);
+INSTR(sbb_d);
+INSTR(sbb_e);
+INSTR(sbb_h);
+INSTR(sbb_l);
+INSTR(sbb_m);
+INSTR(sbb_a);
+
 /* Increment Word Instructions */
 INSTR(inx_b);
 INSTR(inx_d);
@@ -190,6 +220,46 @@ INSTR(rrc);
 INSTR(ral);
 INSTR(rar);
 
+/* Logical And Instructions */
+INSTR(ana_b);
+INSTR(ana_c);
+INSTR(ana_d);
+INSTR(ana_e);
+INSTR(ana_h);
+INSTR(ana_l);
+INSTR(ana_m);
+INSTR(ana_a);
+
+/* Logical Xor Instructions */
+INSTR(xra_b);
+INSTR(xra_c);
+INSTR(xra_d);
+INSTR(xra_e);
+INSTR(xra_h);
+INSTR(xra_l);
+INSTR(xra_m);
+INSTR(xra_a);
+
+/* Logical Or Instructions */
+INSTR(ora_b);
+INSTR(ora_c);
+INSTR(ora_d);
+INSTR(ora_e);
+INSTR(ora_h);
+INSTR(ora_l);
+INSTR(ora_m);
+INSTR(ora_a);
+
+/* Logical Compare Instructions */
+INSTR(cmp_b);
+INSTR(cmp_c);
+INSTR(cmp_d);
+INSTR(cmp_e);
+INSTR(cmp_h);
+INSTR(cmp_l);
+INSTR(cmp_m);
+INSTR(cmp_a);
+
 /* Double Byte Add Instructions */
 INSTR(dad_b);
 INSTR(dad_d);
@@ -205,7 +275,7 @@ INSTR(cmc);
 INSTR(hlt);
 
 /* Help */
-bool carry_out_lower_nibble(uint8_t a, uint8_t b);
+uint8_t get_byte_hl(const i8080emu *emu);
 
 /* Debug Stuff. */
 void i8080emu_print_registers(i8080emu  *emu);

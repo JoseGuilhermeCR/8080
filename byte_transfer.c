@@ -80,7 +80,7 @@ INSTR(lda) {
 
 #define MOV_RM_INSTR(r,r1,R)	\
 	INSTR(mov_##r##r1) {	\
-		emu->i8080.R = emu->memory[(emu->i8080.H << 8) | emu->i8080.L];	\
+		emu->i8080.R = get_byte_hl(emu);	\
 	}
 
 #define MOV_MR_INSTR(r,r1,R)	\

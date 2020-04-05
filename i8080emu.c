@@ -57,6 +57,13 @@ const void (*instruction_table[0x100]) (i8080emu *emu) = {
 	mov_mb, mov_mc, mov_md, mov_me, mov_mh, mov_ml, hlt, mov_ma,
 	mov_ab, mov_ac, mov_ad, mov_ae, mov_ah, mov_al, mov_am, NULL,
 	add_b, add_c, add_d, add_e, add_h, add_l, add_m, add_a,
+	adc_b, adc_c, adc_d, adc_e, adc_h, adc_l, adc_m, adc_a,
+	sub_b, sub_c, sub_d, sub_e, sub_h, sub_l, sub_m, sub_a,
+	sbb_b, sbb_c, sbb_d, sbb_e, sbb_h, sbb_l, sbb_m, sbb_a,
+	ana_b, ana_c, ana_d, ana_e, ana_h, ana_l, ana_m, ana_a,
+	xra_b, xra_c, xra_d, xra_e, xra_h, xra_l, xra_m, xra_a,
+	ora_b, ora_c, ora_d, ora_e, ora_h, ora_l, ora_m, ora_a,
+	cmp_b, cmp_c, cmp_d, cmp_e, cmp_h, cmp_l, cmp_m, cmp_a,
 };
 
 /* Setup functions */
@@ -72,7 +79,7 @@ i8080emu *i8080emu_create() {
 	emu->i8080.E = 0x00;
 	emu->i8080.H = 0x00;
 	emu->i8080.L = 0x00;
-	emu->i8080.PC  = 0x1fce; //0x0000;
+	emu->i8080.PC  = 0x1bba; //0x0000;
 	emu->i8080.SP  = 0x0000;
 
 	// Allocate memory, for now 65536 bytes (max possible).
@@ -122,10 +129,8 @@ void i8080emu_cycle(i8080emu *emu) {
 }
 
 /* Help */
-bool carry_out_lower_nibble(uint8_t a, uint8_t b) {
-	// Add the lower nibbles and check if bit 4 is set.
-	// If it is, a carry out happened.
-	return ((a & 0xf) + (b & 0xf)) & 0x10;
+uint8_t get_byte_hl(const i8080emu *emu) {
+	return emu->memory[(emu->i8080.H << 8) | emu->i8080.L];
 }
 
 /* Debug Stuff */
