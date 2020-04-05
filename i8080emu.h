@@ -126,6 +126,14 @@ INSTR(mov_mh);
 INSTR(mov_ml);
 INSTR(mov_ma);
 
+INSTR(mov_ab);
+INSTR(mov_ac);
+INSTR(mov_ad);
+INSTR(mov_ae);
+INSTR(mov_ah);
+INSTR(mov_al);
+INSTR(mov_am);
+
 /* 16 Bit Transfer Instructions */
 INSTR(lxi_b);
 INSTR(lxi_d);

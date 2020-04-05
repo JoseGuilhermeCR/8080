@@ -45,9 +45,9 @@ const void (*instruction_table[0x100]) (i8080emu *emu) = {
 	NULL, dad_b, ldax_b, dcx_b, inr_c, dcr_c, mvi_c, rrc,
 	NULL, lxi_d, stax_d, inx_d, inr_d, dcr_d, mvi_d, ral,
 	NULL, dad_d, ldax_d, dcx_d, inr_e, dcr_e, mvi_e, rar,
-	NULL, lxi_h, shld, inx_h, inr_h, dcr_h, mvi_h, NULL, /* RIM is NULL. TODO:SecondNULL DAA*/
+	NULL, lxi_h, shld, inx_h, inr_h, dcr_h, mvi_h, NULL, 		/* RIM is NULL. TODO:SecondNULL DAA*/
 	NULL, dad_h, lhld, dcx_h, inr_l, dcr_l, mvi_l, cma,
-	NULL, lxi_sp, sta, inx_sp, inr_m, dcr_m, mvi_m, stc, /*SIM is NULL*/
+	NULL, lxi_sp, sta, inx_sp, inr_m, dcr_m, mvi_m, stc, 		/*SIM is NULL*/
 	NULL, dad_sp, lda, dcx_sp, inr_a, dcr_a, mvi_a, cmc,
 	NULL, mov_bc, mov_bd, mov_be, mov_bh, mov_bl, mov_bm, mov_ba,	/* Not including MOV R,R (where R is any Register). */
 	mov_cb, NULL, mov_cd, mov_ce, mov_ch, mov_cl, mov_cm, mov_ca,
@@ -56,7 +56,8 @@ const void (*instruction_table[0x100]) (i8080emu *emu) = {
 	mov_hb, mov_hc, mov_hd, mov_he, NULL, mov_hl, mov_hm, mov_ha,
 	mov_lb, mov_lc, mov_ld, mov_le, mov_lh, NULL, mov_lm, mov_la,
 	mov_mb, mov_mc, mov_md, mov_me, mov_mh, mov_ml, NULL, hlt,
-	mov_ma,
+	mov_ma, mov_ab, mov_ac, mov_ad, mov_ae, mov_ah, mov_al, mov_am,
+	NULL, 
 };
 
 /* Setup functions */
