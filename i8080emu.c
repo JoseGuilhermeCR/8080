@@ -8,7 +8,26 @@ int main(int argc, char **argv) {
 	i8080emu *i = i8080emu_create();
 	i8080emu_load_program_into_memory(i, "invaders/invaders");
 	
-	
+	i8080emu_print_registers(i);
+	i8080emu_cycle(i);
+	i8080emu_print_registers(i);
+
+	i8080emu_print_registers(i);
+	i8080emu_cycle(i);
+	i8080emu_print_registers(i);
+
+	i8080emu_print_registers(i);
+	i8080emu_cycle(i);
+	i8080emu_print_registers(i);
+
+	i8080emu_print_registers(i);
+	i8080emu_cycle(i);
+	i8080emu_print_registers(i);
+
+	i8080emu_print_registers(i);
+	i8080emu_cycle(i);
+	i8080emu_print_registers(i);
+
 	i8080emu_print_registers(i);
 	i8080emu_cycle(i);
 	i8080emu_print_registers(i);
@@ -64,6 +83,14 @@ const void (*instruction_table[0x100]) (i8080emu *emu) = {
 	xra_b, xra_c, xra_d, xra_e, xra_h, xra_l, xra_m, xra_a,
 	ora_b, ora_c, ora_d, ora_e, ora_h, ora_l, ora_m, ora_a,
 	cmp_b, cmp_c, cmp_d, cmp_e, cmp_h, cmp_l, cmp_m, cmp_a,
+	rnz, pop_b, jnz, jmp, cnz, push_b, adi, rst_0,
+	rz, ret, jz, NULL, cz, call, aci, rst_1,
+	rnc, pop_d, jnc, NULL /* OUT */, cnc, push_d, sui, rst_2,
+	rc, NULL, jc, NULL /* IN */, cc, NULL, sbi, rst_3,
+	rpo, pop_h, jpo, xthl, cpo, push_h, ani, rst_4,
+	rpe, pchl, jpe, xchg, cpe, NULL, xri, rst_5,
+	rp, pop_psw, jp, NULL /* DI */, cp, push_psw, ori, rst_6,
+	rm, sphl, jm, NULL /* EI */, cm, NULL, cpi, rst_7
 };
 
 /* Setup functions */
@@ -79,7 +106,7 @@ i8080emu *i8080emu_create() {
 	emu->i8080.E = 0x00;
 	emu->i8080.H = 0x00;
 	emu->i8080.L = 0x00;
-	emu->i8080.PC  = 0x1bba; //0x0000;
+	emu->i8080.PC  = 0x0000; //0x0000;
 	emu->i8080.SP  = 0x0000;
 
 	// Allocate memory, for now 65536 bytes (max possible).
@@ -121,16 +148,25 @@ void i8080_set_flag(i8080 *i8080, Flags flag, bool value) {
 }
 
 void i8080emu_cycle(i8080emu *emu) {
-	if (instruction_table[emu->memory[emu->i8080.PC]])
+	if (instruction_table[emu->memory[emu->i8080.PC]]) {
 		(*instruction_table[emu->memory[emu->i8080.PC]])(emu);
-	else
+	} else {
 		puts("\nInstruction was null.\n");
-	++emu->i8080.PC;
+		++emu->i8080.PC;
+	}
 }
 
 /* Help */
 uint8_t get_byte_hl(const i8080emu *emu) {
 	return emu->memory[(emu->i8080.H << 8) | emu->i8080.L];
+}
+
+uint16_t get_word_from_instruction(i8080emu *emu) {
+	return (emu->memory[emu->i8080.PC + 2] << 8) | emu->memory[emu->i8080.PC + 1];
+}
+
+uint8_t get_byte_from_instruction(i8080emu *emu) {
+	return emu->memory[emu->i8080.PC + 1];
 }
 
 /* Debug Stuff */

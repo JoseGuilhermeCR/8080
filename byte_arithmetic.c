@@ -13,6 +13,7 @@
 		i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.R == 0x00);			\
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.R & 0x80);			\
                 i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.R]);		\
+		++emu->i8080.PC;								\
 	}
 
 /* Increment Byte Instructions */
@@ -24,26 +25,17 @@ INR_INSTR(h,H)
 INR_INSTR(l,L)
 INR_INSTR(a,A)
 
-/* For example: INR_INSTR(b,B) will become (here in a more readable way and with comments):
-INSTR(inr_b) {
-	// Increment register B.
-	++emu->i8080.B;
-
-	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.B == 0x00);			// Zero Flag.
-	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.B & 0x80);			// Sign Flag.
-	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.B]);		// Parity Flag.
-} */
-
 INSTR(inr_m) {
 	// Increments byte at (HL).
-	// Points to the wanted byte.
-	uint8_t *byte = &emu->memory[(emu->i8080.H << 8) | emu->i8080.L];
+	uint8_t *byte = &emu->memory[(emu->i8080.H << 8) | emu->i8080.L];	// Points to byte at (HL).
 
 	++(*byte);
 
 	i8080_set_flag(&emu->i8080, FLAG_Z, *byte == 0x00);		// Zero Flag.
 	i8080_set_flag(&emu->i8080, FLAG_S, *byte & 0x80);		// Sign Flag.
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[*byte]);	// Parity Flag.
+
+	++emu->i8080.PC;
 }
 
 /* Decrement Byte Instructions */
@@ -55,6 +47,7 @@ INSTR(inr_m) {
 		i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.R == 0x0);		\
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.R & 0x80);		\
 		i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.R]);	\
+		++emu->i8080.PC;							\
 	}
 
 DCR_INSTR(b,B)
@@ -65,22 +58,9 @@ DCR_INSTR(h,H)
 DCR_INSTR(l,L)
 DCR_INSTR(a,A)
 
-/* Example with comments:
-INSTR(dcr_b) {
-	// TODO: know how the A flag should be set in a subtraction.
-	// Decrement register B.
-	--emu->i8080.B;
-
-	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.B == 0x00);			// Zero Flag.
-	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.B & 0x80);			// Sign Flag.
-	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.B]);		// Parity Flag.
-}
-*/
-
 INSTR(dcr_m) {
 	// Decrements byte at (HL).
-	// Points to the wanted byte.
-	uint8_t *byte = &emu->memory[(emu->i8080.H << 8) | emu->i8080.L];
+	uint8_t *byte = &emu->memory[(emu->i8080.H << 8) | emu->i8080.L]; // Points to the wanted byte.
 
 	// TODO: know how the A flag should be set in a subtraction.
 
@@ -89,17 +69,19 @@ INSTR(dcr_m) {
 	i8080_set_flag(&emu->i8080, FLAG_Z, *byte == 0x00);		// Zero Flag.
 	i8080_set_flag(&emu->i8080, FLAG_S, *byte & 0x80);		// Sign Flag.
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[*byte]);	// Parity Flag.
+	++emu->i8080.PC;
 }
 
 /* Add Byte Instructions */
 #define ADD_INSTR(r,R)	\
 	INSTR(add_##r) {\
 		i8080_set_flag(&emu->i8080, FLAG_C, (emu->i8080.A + emu->i8080.R) > 255);			\
-		i8080_set_flag(&emu->i8080, FLAG_A, (LB(emu->i8080.A) + LB(emu->i8080.R)) > 15);		\
+		i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN(emu->i8080.R)) > 15);		\
 		emu->i8080.A += emu->i8080.R;	\
 		i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);					\
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);					\
 		i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);				\
+		++emu->i8080.PC;										\
 	}
 
 ADD_INSTR(b,B)
@@ -114,13 +96,31 @@ INSTR(add_m) {
 	uint8_t byte = get_byte_hl(emu);
 
 	i8080_set_flag(&emu->i8080, FLAG_C, (emu->i8080.A + byte) > 255);			// Carry Flag.
-	i8080_set_flag(&emu->i8080, FLAG_A, (LB(emu->i8080.A) + LB(byte)) > 15);		// Auxiliary Carry Flag.
+	i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN(byte)) > 15);		// Auxiliary Carry Flag.
 
 	emu->i8080.A += byte;
 
 	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);				// Zero Flag.
 	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);				// Signal FLag.
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			// Parity Flag.
+
+	++emu->i8080.PC;
+}
+
+INSTR(adi) {
+	// Adds an immediat to A.
+	uint8_t byte = get_byte_from_instruction(emu);
+
+	i8080_set_flag(&emu->i8080, FLAG_C, (emu->i8080.A + byte) > 255);			// Carry Flag.
+	i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN(byte)) > 15);		// Auxiliary Carry Flag.
+
+	emu->i8080.A += byte;
+
+	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);				// Zero Flag.
+	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);				// Signal FLag.
+	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			// Parity Flag.
+
+	emu->i8080.PC += 2;
 }
 
 /* Add Byte with Carry-In Instructions */
@@ -128,11 +128,12 @@ INSTR(add_m) {
 	INSTR(adc_##r) {	\
 		uint8_t carry = i8080_get_flag(&emu->i8080, FLAG_C) ? 1 : 0;						\
 		i8080_set_flag(&emu->i8080, FLAG_C, (emu->i8080.A + emu->i8080.R + carry) > 255);			\
-		i8080_set_flag(&emu->i8080, FLAG_A, (LB(emu->i8080.A) + LB((emu->i8080.R + carry))) > 15);		\
+		i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN((emu->i8080.R + carry))) > 15);		\
 		emu->i8080.A += emu->i8080.R + carry;									\
 		i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);						\
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);						\
 		i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);					\
+		++emu->i8080.PC;											\
 	}
 
 ADC_INSTR(b,B)
@@ -148,24 +149,44 @@ INSTR(adc_m) {
 	uint8_t byte = get_byte_hl(emu);
 
 	i8080_set_flag(&emu->i8080, FLAG_C, (emu->i8080.A + byte + carry) > 255);			// Carry Flag.
-	i8080_set_flag(&emu->i8080, FLAG_A, (LB(emu->i8080.A) + LB((byte + carry))) > 15);		// Auxiliary Carry Flag.
+	i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN((byte + carry))) > 15);		// Auxiliary Carry Flag.
 
 	emu->i8080.A += byte + carry;
 	
 	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);					// Zero Flag.
 	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);					// Signal Flag.
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);				// Parity Flag.
+
+	++emu->i8080.PC;
+}
+
+INSTR(aci) {
+	// Adds an immediat to A and carry.
+	uint8_t carry = i8080_get_flag(&emu->i8080, FLAG_C) ? 1 : 0;
+	uint8_t byte = get_byte_from_instruction(emu);
+
+	i8080_set_flag(&emu->i8080, FLAG_C, (emu->i8080.A + byte + carry) > 255);			// Carry Flag.
+	i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN(byte)) > 15);		// Auxiliary Carry Flag.
+
+	emu->i8080.A += byte;
+
+	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);				// Zero Flag.
+	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);				// Signal FLag.
+	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			// Parity Flag.
+
+	emu->i8080.PC += 2;
 }
 
 /* Sub Byte Instructions */
 #define SUB_INSTR(r,R)	\
 	INSTR(sub_##r) {	\
 		i8080_set_flag(&emu->i8080, FLAG_C, emu->i8080.R > emu->i8080.A);		\
-		i8080_set_flag(&emu->i8080, FLAG_A, (LB(emu->i8080.R) > LB(emu->i8080.A)));	\
+		i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.R) > LN(emu->i8080.A)));	\
 		emu->i8080.A -= emu->i8080.R;							\
 		i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);			\
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);			\
 		i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);		\
+		++emu->i8080.PC;								\
 	}
 
 SUB_INSTR(b,B)
@@ -180,13 +201,30 @@ INSTR(sub_m) {
 	uint8_t byte = get_byte_hl(emu);
 
 	i8080_set_flag(&emu->i8080, FLAG_C, byte > emu->i8080.A);				// Carry Flag.
-	i8080_set_flag(&emu->i8080, FLAG_A, LB(byte) > LB(emu->i8080.A));			// Auxiliary Carry Flag.
+	i8080_set_flag(&emu->i8080, FLAG_A, LN(byte) > LN(emu->i8080.A));			// Auxiliary Carry Flag.
 
 	emu->i8080.A -= byte;
 
 	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);				// Zero Flag.
 	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);				// Signal FLag.
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			// Parity Flag.
+
+	++emu->i8080.PC;
+}
+
+INSTR(sui) {
+	uint8_t byte = get_byte_from_instruction(emu);
+	
+	i8080_set_flag(&emu->i8080, FLAG_C, byte > emu->i8080.A);
+	i8080_set_flag(&emu->i8080, FLAG_A, (LN(byte) > LN(emu->i8080.A)));
+
+	emu->i8080.A -= byte;
+
+	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);
+	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);
+	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);
+
+	emu->i8080.PC += 2;
 }
 
 /* Sub Byte with Borrow In Instructions */
@@ -194,11 +232,12 @@ INSTR(sub_m) {
 	INSTR(sbb_##r) {\
 		uint8_t carry = i8080_get_flag(&emu->i8080, FLAG_C) ? 1 : 0;				\
 		i8080_set_flag(&emu->i8080, FLAG_C, (emu->i8080.R - carry) > emu->i8080.A);		\
-		i8080_set_flag(&emu->i8080, FLAG_A, (LB((emu->i8080.R - carry)) > LB(emu->i8080.A)));	\
+		i8080_set_flag(&emu->i8080, FLAG_A, (LN((emu->i8080.R - carry)) > LN(emu->i8080.A)));	\
 		emu->i8080.A -= emu->i8080.R - carry;							\
 		i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);				\
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);				\
 		i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			\
+		++emu->i8080.PC;									\
 	}
 
 SBB_INSTR(b,B)
@@ -214,11 +253,30 @@ INSTR(sbb_m) {
 	uint8_t byte = get_byte_hl(emu);
 
 	i8080_set_flag(&emu->i8080, FLAG_C, (byte - carry) > emu->i8080.A);			// Carry Flag.
-	i8080_set_flag(&emu->i8080, FLAG_A, LB((byte - carry)) > LB(emu->i8080.A));		// Auxiliary Carry Flag.
+	i8080_set_flag(&emu->i8080, FLAG_A, LN((byte - carry)) > LN(emu->i8080.A));		// Auxiliary Carry Flag.
 
 	emu->i8080.A -= byte - carry;
 
 	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);				// Zero Flag.
 	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);				// Signal FLag.
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			// Parity Flag.
+
+	++emu->i8080.PC;
 }
+
+INSTR(sbi) {
+	uint8_t carry = i8080_get_flag(&emu->i8080, FLAG_C) ? 1 : 0;
+	uint8_t byte = get_byte_from_instruction(emu);
+
+	i8080_set_flag(&emu->i8080, FLAG_C, (byte - carry) > emu->i8080.A);
+	i8080_set_flag(&emu->i8080, FLAG_A, (LN((byte - carry)) > LN(emu->i8080.A)));
+
+	emu->i8080.A -= byte - carry;
+
+	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);
+	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);
+
+	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);
+	emu->i8080.PC += 2;
+}
+

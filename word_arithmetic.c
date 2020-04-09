@@ -8,24 +8,16 @@
 		uint16_t register_pair = ((emu->i8080.R << 8) | emu->i8080.R1) + 1;	\
 		emu->i8080.R1 = LB(register_pair);	\
 		emu->i8080.R  = HB(register_pair);	\
+		++emu->i8080.PC;			\
 	}
 
 INX_INSTR(b,B,C)
 INX_INSTR(d,D,E)
 INX_INSTR(h,H,L)
 
-/*
-Example with comments:
-INSTR(inx_d) {
-	// Increment register pair DE
-	uint16_t register_pair = ((emu->i8080.D << 8) | emu->i8080.E) + 1;
-	emu->i8080.D = LB(register_pair);
-	emu->i8080.E = HB(register_pair);
-}
-*/
-
 INSTR(inx_sp) {
 	++emu->i8080.SP;
+	++emu->i8080.PC;
 }
 
 /* Decrement Word Instructions */
@@ -36,24 +28,16 @@ INSTR(inx_sp) {
 		uint16_t register_pair = ((emu->i8080.R << 8) | emu->i8080.R1) - 1;	\
 		emu->i8080.R1 = LB(register_pair);	\
 		emu->i8080.R  = HB(register_pair);	\
+		++emu->i8080.PC;			\
 	}
 
 DCX_INSTR(b,B,C)
 DCX_INSTR(d,D,E)
 DCX_INSTR(h,H,L)
 
-/*
-Example with comments:
-INSTR(dcx_b) {
-	// Decrement register pair BC.
-	uint16_t register_pair = ((emu->i8080.B << 8) | emu->i8080.C) - 1;
-	emu->i8080.C = LB(register_pair);
-	emu->i8080.B = HB(register_pair);
-}
-*/
-
 INSTR(dcx_sp) {
 	--emu->i8080.SP;
+	++emu->i8080.PC;
 }
 
 /* Double Byte Add Instructions */
@@ -67,28 +51,12 @@ INSTR(dcx_sp) {
 		emu->i8080.L = LB(HL);	\
 		emu->i8080.H = HB(HL);	\
 		i8080_set_flag(&emu->i8080, FLAG_C, (HL + register_pair) > 65535);	\
+		++emu->i8080.PC;							\
 	}
 
 DAD_INSTR(b,B,C)
 DAD_INSTR(d,D,E)
 DAD_INSTR(h,H,L)
-
-/*
-Example with comments:
-INSTR(dad_b) {
-	// HL += register_pair;
-	uint16_t HL = (emu->i8080.H << 8) | emu->i8080.L;		// Put together the values held by H and L.
-	uint16_t register_pair = (emu->i8080.B << 8) | emu->i8080.C;	// Same with register_pair.
-
-	HL += register_pair;
-	
-	// Put each byte in their own register.
-	emu->i8080.L = LB(HL);
-	emu->i8080.H = HB(HL);
-
-	i8080_set_flag(&emu->i8080, FLAG_C, (HL + register_pair) > 65535);// Carry Flag.
-}
-*/
 
 INSTR(dad_sp) {
 	// HL += SP;
@@ -101,4 +69,6 @@ INSTR(dad_sp) {
 	emu->i8080.H = HB(HL);
 
 	i8080_set_flag(&emu->i8080, FLAG_C, (HL + emu->i8080.SP) > 65535);// Carry Flag.
+
+	++emu->i8080.PC;
 }

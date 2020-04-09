@@ -32,6 +32,7 @@ void set_logical_cmp_flags(i8080 *i8080, uint8_t value) {
 	INSTR(ana_##r) {			\
 		emu->i8080.A &= emu->i8080.R;	\
 		set_logical_flags(&emu->i8080);	\
+		++emu->i8080.PC;		\
 	}
 
 
@@ -44,10 +45,17 @@ ANA_INSTR(l,L)
 ANA_INSTR(a,A)
 
 INSTR(ana_m) {
-	uint8_t byte = get_byte_hl(emu);
-
-	emu->i8080.A &= byte;
+	emu->i8080.A &= get_byte_hl(emu);
 	set_logical_flags(&emu->i8080);
+
+	++emu->i8080.PC;
+}
+
+INSTR(ani) {
+	emu->i8080.A &= get_byte_from_instruction(emu);
+	set_logical_flags(&emu->i8080);
+
+	emu->i8080.PC += 2;
 }
 
 /* Logical Xor Instructions */
@@ -55,6 +63,7 @@ INSTR(ana_m) {
 	INSTR(xra_##r) {			\
 		emu->i8080.A ^= emu->i8080.R;	\
 		set_logical_flags(&emu->i8080);	\
+		++emu->i8080.PC;		\
 	}
 
 XRA_INSTR(b,B)
@@ -66,10 +75,17 @@ XRA_INSTR(l,L)
 XRA_INSTR(a,A)
 
 INSTR(xra_m) {
-	uint8_t byte = get_byte_hl(emu);
-
-	emu->i8080.A ^= byte;
+	emu->i8080.A ^= get_byte_hl(emu);
 	set_logical_flags(&emu->i8080);
+
+	++emu->i8080.PC;
+}
+
+INSTR(xri) {
+	emu->i8080.A ^= get_byte_from_instruction(emu);
+	set_logical_flags(&emu->i8080);
+
+	emu->i8080.PC += 2;
 }
 
 /* Logical Or Instructions */
@@ -77,6 +93,7 @@ INSTR(xra_m) {
 	INSTR(ora_##r) {			\
 		emu->i8080.A |= emu->i8080.R;	\
 		set_logical_flags(&emu->i8080);	\
+		++emu->i8080.PC;		\
 	}
 
 ORA_INSTR(b,B)
@@ -88,16 +105,24 @@ ORA_INSTR(l,L)
 ORA_INSTR(a,A)
 
 INSTR(ora_m) {
-	uint8_t byte = get_byte_hl(emu);
-
-	emu->i8080.A |= byte;
+	emu->i8080.A |= get_byte_hl(emu);
 	set_logical_flags(&emu->i8080);
+	
+	++emu->i8080.PC;
+}
+
+INSTR(ori) {
+	emu->i8080.A |= get_byte_from_instruction(emu);
+	set_logical_flags(&emu->i8080);
+
+	emu->i8080.PC += 2;
 }
 
 /* Logical Compare Instructions */
 #define CMP_INSTR(r,R)	\
-	INSTR(cmp_##r) {					 \
-		set_logical_cmp_flags(&emu->i8080, emu->i8080.R);\
+	INSTR(cmp_##r) {					 	\
+		set_logical_cmp_flags(&emu->i8080, emu->i8080.R);	\
+		++emu->i8080.PC;					\
 	}
 
 CMP_INSTR(b,B)
@@ -109,6 +134,13 @@ CMP_INSTR(l,L)
 CMP_INSTR(a,A)
 
 INSTR(cmp_m) {
-	uint8_t byte = get_byte_hl(emu);
-	set_logical_cmp_flags(&emu->i8080, byte);
+	set_logical_cmp_flags(&emu->i8080, get_byte_hl(emu));
+	
+	++emu->i8080.PC;
+}
+
+INSTR(cpi) {
+	set_logical_cmp_flags(&emu->i8080, get_byte_from_instruction(emu));
+	
+	emu->i8080.PC += 2;
 }

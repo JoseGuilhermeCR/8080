@@ -10,6 +10,8 @@ INSTR(rlc) {
 	emu->i8080.A |= previous_bit7;				// Bit 0 is set to previous bit 7.
 
 	i8080_set_flag(&emu->i8080, FLAG_C, previous_bit7);	// Carry Flag.
+
+	++emu->i8080.PC;
 }
 
 INSTR(rrc) {
@@ -21,6 +23,8 @@ INSTR(rrc) {
 	emu->i8080.A |= previous_bit0 << 7;			// Bit 7 is set to previous bit 0.
 
 	i8080_set_flag(&emu->i8080, FLAG_C, previous_bit0);	// Carry Flag.
+
+	++emu->i8080.PC;
 }
 
 INSTR(ral) {
@@ -33,6 +37,8 @@ INSTR(ral) {
 	emu->i8080.A |= previous_cy;	// Bit 0 is set to previous carry flag.
 
 	i8080_set_flag(&emu->i8080, FLAG_C, previous_bit7);	// Carry Flag is set to previous bit 7
+
+	++emu->i8080.PC;
 }
 
 INSTR(rar) {
@@ -45,4 +51,6 @@ INSTR(rar) {
 	emu->i8080.A |= previous_bit7;	// Bit 7 is set to previous bit 7.
 	
 	i8080_set_flag(&emu->i8080, FLAG_C, previous_bit0);	// Carry Flag is set to previous bit 0
+
+	++emu->i8080.PC;
 }
