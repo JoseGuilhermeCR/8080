@@ -14,6 +14,7 @@
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.R & 0x80);			\
                 i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.R]);		\
 		++emu->i8080.PC;								\
+		return 5;									\
 	}
 
 /* Increment Byte Instructions */
@@ -36,6 +37,8 @@ INSTR(inr_m) {
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[*byte]);	// Parity Flag.
 
 	++emu->i8080.PC;
+
+	return 10;
 }
 
 /* Decrement Byte Instructions */
@@ -48,6 +51,7 @@ INSTR(inr_m) {
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.R & 0x80);		\
 		i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.R]);	\
 		++emu->i8080.PC;							\
+		return 5;								\
 	}
 
 DCR_INSTR(b,B)
@@ -70,6 +74,8 @@ INSTR(dcr_m) {
 	i8080_set_flag(&emu->i8080, FLAG_S, *byte & 0x80);		// Sign Flag.
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[*byte]);	// Parity Flag.
 	++emu->i8080.PC;
+
+	return 10;
 }
 
 /* Add Byte Instructions */
@@ -82,6 +88,7 @@ INSTR(dcr_m) {
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);					\
 		i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);				\
 		++emu->i8080.PC;										\
+		return 4;											\
 	}
 
 ADD_INSTR(b,B)
@@ -105,6 +112,8 @@ INSTR(add_m) {
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			// Parity Flag.
 
 	++emu->i8080.PC;
+
+	return 7;
 }
 
 INSTR(adi) {
@@ -121,6 +130,8 @@ INSTR(adi) {
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			// Parity Flag.
 
 	emu->i8080.PC += 2;
+
+	return 7;
 }
 
 /* Add Byte with Carry-In Instructions */
@@ -134,6 +145,7 @@ INSTR(adi) {
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);						\
 		i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);					\
 		++emu->i8080.PC;											\
+		return 4;												\
 	}
 
 ADC_INSTR(b,B)
@@ -158,6 +170,8 @@ INSTR(adc_m) {
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);				// Parity Flag.
 
 	++emu->i8080.PC;
+
+	return 7;
 }
 
 INSTR(aci) {
@@ -175,6 +189,8 @@ INSTR(aci) {
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			// Parity Flag.
 
 	emu->i8080.PC += 2;
+
+	return 7;
 }
 
 /* Sub Byte Instructions */
@@ -187,6 +203,7 @@ INSTR(aci) {
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);			\
 		i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);		\
 		++emu->i8080.PC;								\
+		return 4;									\
 	}
 
 SUB_INSTR(b,B)
@@ -210,6 +227,8 @@ INSTR(sub_m) {
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			// Parity Flag.
 
 	++emu->i8080.PC;
+
+	return 7;
 }
 
 INSTR(sui) {
@@ -225,6 +244,8 @@ INSTR(sui) {
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);
 
 	emu->i8080.PC += 2;
+
+	return 7;
 }
 
 /* Sub Byte with Borrow In Instructions */
@@ -238,6 +259,7 @@ INSTR(sui) {
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);				\
 		i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			\
 		++emu->i8080.PC;									\
+		return 4;										\
 	}
 
 SBB_INSTR(b,B)
@@ -262,6 +284,8 @@ INSTR(sbb_m) {
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);			// Parity Flag.
 
 	++emu->i8080.PC;
+
+	return 7;
 }
 
 INSTR(sbi) {
@@ -278,5 +302,7 @@ INSTR(sbi) {
 
 	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);
 	emu->i8080.PC += 2;
+
+	return 7;
 }
 

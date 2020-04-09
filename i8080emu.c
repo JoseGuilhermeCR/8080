@@ -8,30 +8,6 @@ int main(int argc, char **argv) {
 	i8080emu *i = i8080emu_create();
 	i8080emu_load_program_into_memory(i, "invaders/invaders");
 	
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
-
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
-
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
-
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
-
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
-
-	i8080emu_print_registers(i);
-	i8080emu_cycle(i);
-	i8080emu_print_registers(i);
-
 	i8080emu_destroy(i);
 
 	return 0;
@@ -58,7 +34,7 @@ const uint8_t parity_table[0x100] = {
 };
 
 // NOPS will be substituted by a NULL.
-const void (*instruction_table[0x100]) (i8080emu *emu) = {
+const uint8_t (*instruction_table[0x100]) (i8080emu *emu) = {
 	NULL, lxi_b, stax_b, inx_b, inr_b, dcr_b, mvi_b, rlc,
 	NULL, dad_b, ldax_b, dcx_b, inr_c, dcr_c, mvi_c, rrc,
 	NULL, lxi_d, stax_d, inx_d, inr_d, dcr_d, mvi_d, ral,
@@ -147,13 +123,19 @@ void i8080_set_flag(i8080 *i8080, Flags flag, bool value) {
 		i8080->F &= ~flag;
 }
 
-void i8080emu_cycle(i8080emu *emu) {
-	if (instruction_table[emu->memory[emu->i8080.PC]]) {
-		(*instruction_table[emu->memory[emu->i8080.PC]])(emu);
-	} else {
-		puts("\nInstruction was null.\n");
-		++emu->i8080.PC;
+unsigned i8080emu_run_cycles(i8080emu *emu, unsigned cycles) {
+	unsigned done_cycles = 0;
+
+	while (done_cycles < cycles) {
+		if (instruction_table[emu->memory[emu->i8080.PC]]) {
+			done_cycles += (*instruction_table[emu->memory[emu->i8080.PC]])(emu);
+		} else {
+			puts("Instruction was null.\n");
+			++emu->i8080.PC;
+		}
 	}
+
+	return done_cycles;
 }
 
 /* Help */

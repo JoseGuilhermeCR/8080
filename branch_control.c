@@ -7,11 +7,17 @@ void return_from_subroutine(i8080emu *emu) {
 
 }
 
-void return_with_condition(i8080emu *emu, Flags flag, bool value) {
-	if (i8080_get_flag(&emu->i8080, flag) == value)
+uint8_t return_with_condition(i8080emu *emu, Flags flag, bool value) {
+	uint8_t cycles = 5;
+
+	if (i8080_get_flag(&emu->i8080, flag) == value) {
 		return_from_subroutine(emu);
-	else
+		cycles = 11;
+	} else {
 		++emu->i8080.PC;
+	}
+
+	return cycles;
 }
 
 void save_pc_in_stack(i8080emu *emu) {
@@ -34,138 +40,154 @@ void call_addr(i8080emu *emu) {
 	emu->i8080.PC = addr;
 }
 
-void call_addr_with_condition(i8080emu *emu, Flags flag, bool value) {
-	if (i8080_get_flag(&emu->i8080, flag) == value) 
+uint8_t call_addr_with_condition(i8080emu *emu, Flags flag, bool value) {
+	uint8_t cycles = 11;
+
+	if (i8080_get_flag(&emu->i8080, flag) == value) {
 		call_addr(emu);
-	else
+		cycles = 17;
+	} else {
 		emu->i8080.PC += 3;
+	}
+
+	return cycles;
 }
 
 void jump(i8080emu *emu) {
 	emu->i8080.PC = get_word_from_instruction(emu);
 }
 
-void jump_with_condition(i8080emu *emu, Flags flag, bool value) {
+uint8_t jump_with_condition(i8080emu *emu, Flags flag, bool value) {
 	if (i8080_get_flag(&emu->i8080, flag) == value)
 		jump(emu);
 	else
 		emu->i8080.PC += 3;
+
+	return 10;
 }
 
 /* Branch Control Instructions */
 
 INSTR(pchl) {
 	emu->i8080.PC = (emu->i8080.H << 8) | emu->i8080.L;
+
+	return 5;
 }
 
 /* Returns */
 INSTR(rnz) {
-	return_with_condition(emu, FLAG_Z, false);
+	return return_with_condition(emu, FLAG_Z, false);
 }
 
 INSTR(rz) {
-	return_with_condition(emu, FLAG_Z, true);
+	return return_with_condition(emu, FLAG_Z, true);
 }
 
 INSTR(ret) {
 	return_from_subroutine(emu);
+
+	return 10;
 }
 
 INSTR(rnc) {
-	return_with_condition(emu, FLAG_C, false);
+	return return_with_condition(emu, FLAG_C, false);
 }
 
 INSTR(rc) {
-	return_with_condition(emu, FLAG_C, true);
+	return return_with_condition(emu, FLAG_C, true);
 }
 
 INSTR(rpo) {
-	return_with_condition(emu, FLAG_P, false); 
+	return return_with_condition(emu, FLAG_P, false); 
 }
 
 INSTR(rpe) {
-	return_with_condition(emu, FLAG_P, true); 
+	return return_with_condition(emu, FLAG_P, true); 
 }
 
 INSTR(rp) {
-	return_with_condition(emu, FLAG_S, false);
+	return return_with_condition(emu, FLAG_S, false);
 }
 
 INSTR(rm) {
-	return_with_condition(emu, FLAG_S, true);
+	return return_with_condition(emu, FLAG_S, true);
 }
 
 /* Jumps */
 INSTR(jnz) {
-	jump_with_condition(emu, FLAG_Z, false);
+	return jump_with_condition(emu, FLAG_Z, false);
 }
 
 INSTR(jz) {
-	jump_with_condition(emu, FLAG_Z, true);
+	return jump_with_condition(emu, FLAG_Z, true);
 }
 
 INSTR(jmp) {
 	jump(emu);
+
+	return 10;
 }
 
 INSTR(jnc) {
-	jump_with_condition(emu, FLAG_C, false);
+	return jump_with_condition(emu, FLAG_C, false);
 }
 
 INSTR(jc) {
-	jump_with_condition(emu, FLAG_C, true);
+	return jump_with_condition(emu, FLAG_C, true);
 }
 
 INSTR(jpo) {
-	jump_with_condition(emu, FLAG_P, false);
+	return jump_with_condition(emu, FLAG_P, false);
 }
 
 INSTR(jpe) {
-	jump_with_condition(emu, FLAG_P, true);
+	return jump_with_condition(emu, FLAG_P, true);
 }
 
 INSTR(jp) {
-	jump_with_condition(emu, FLAG_S, false);
+	return jump_with_condition(emu, FLAG_S, false);
 }
 
 INSTR(jm) {
-	jump_with_condition(emu, FLAG_S, true);
+	return jump_with_condition(emu, FLAG_S, true);
 }
 /* Calls */
 INSTR(cnz) {
-	call_addr_with_condition(emu, FLAG_Z, false);
+	return call_addr_with_condition(emu, FLAG_Z, false);
 }
 
 INSTR(cz) {
-	call_addr_with_condition(emu, FLAG_Z, true);
+	return call_addr_with_condition(emu, FLAG_Z, true);
 }
 
 INSTR(call) {
 	call_addr(emu);
+
+	return 17;
 }
 
 INSTR(cnc) {
-	call_addr_with_condition(emu, FLAG_C, false);
+	return call_addr_with_condition(emu, FLAG_C, false);
 }
 
 INSTR(cc) {
-	call_addr_with_condition(emu, FLAG_C, true);
+	return call_addr_with_condition(emu, FLAG_C, true);
 }
 
 INSTR(cpo) {
-	call_addr_with_condition(emu, FLAG_P, false);
+	return call_addr_with_condition(emu, FLAG_P, false);
 }
 
 INSTR(cpe) {
-	call_addr_with_condition(emu, FLAG_P, true);
+	return call_addr_with_condition(emu, FLAG_P, true);
 }
 
 INSTR(cp) {
-	call_addr_with_condition(emu, FLAG_S, false);
+	return call_addr_with_condition(emu, FLAG_S, false);
 }
 
 INSTR(cm) {
-	call_addr_with_condition(emu, FLAG_S, true);
+	return call_addr_with_condition(emu, FLAG_S, true);
 }
 
 /* Stack Operation Instructions */
@@ -177,6 +199,7 @@ INSTR(cm) {
 		emu->i8080.R = emu->memory[emu->i8080.SP + 1];	\
 		emu->i8080.SP += 2;				\
 		++emu->i8080.PC;				\
+		return 10;					\
 	}
 
 POP_INSTR(b,B,C)
@@ -191,6 +214,7 @@ POP_INSTR(psw,A,F)
 		emu->memory[emu->i8080.SP - 1] = emu->i8080.R1;	\
 		emu->i8080.SP -= 2;				\
 		++emu->i8080.PC;				\
+		return 11;					\
 	}
 
 PUSH_INSTR(b,B,C)
@@ -211,6 +235,7 @@ void call_interrupt_subroutine(i8080emu *emu, uint8_t number) {
 #define RST_INSTR(n)	\
 	INSTR(rst_##n) {\
 		call_interrupt_subroutine(emu, n);	\
+		return 11;				\
 	}
 
 RST_INSTR(0)

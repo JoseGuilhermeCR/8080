@@ -3,11 +3,12 @@
 /* 16 Bit Transfer Instructions */
 
 /* Macro for defining lxi instructions */
-#define LXI_INSTR(r,R,R1)	\
-	INSTR(lxi_##r) {	\
+#define LXI_INSTR(r,R,R1)						\
+	INSTR(lxi_##r) {						\
 		emu->i8080.R1 = emu->memory[emu->i8080.PC + 1];		\
 		emu->i8080.R  = emu->memory[++emu->i8080.PC + 2]; 	\
 		emu->i8080.PC += 3;					\
+		return 10;						\
 	}
 		
 
@@ -20,6 +21,8 @@ INSTR(lxi_sp) {
 	emu->i8080.SP = get_word_from_instruction(emu);
 
 	emu->i8080.PC += 3;
+
+	return 10;
 }
 
 INSTR(shld) {
@@ -32,6 +35,8 @@ INSTR(shld) {
 	emu->memory[addr + 1] = emu->i8080.H;
 
 	emu->i8080.PC += 3;
+
+	return 16;
 }
 
 INSTR(lhld) {
@@ -44,6 +49,8 @@ INSTR(lhld) {
 	emu->i8080.H = emu->memory[addr + 1];
 
 	emu->i8080.PC += 3;
+
+	return 16;
 }
 
 INSTR(xthl) {
@@ -58,6 +65,8 @@ INSTR(xthl) {
 	emu->memory[emu->i8080.SP] = L;
 
 	++emu->i8080.PC;
+
+	return 18;
 }
 
 INSTR(xchg) {
@@ -72,9 +81,13 @@ INSTR(xchg) {
 	emu->i8080.E = L;
 
 	++emu->i8080.PC;
+
+	return 5;
 }
 
 INSTR(sphl) {
 	// SP = HL.
 	emu->i8080.SP = (emu->i8080.H << 8) | emu->i8080.L;
+
+	return 5;
 }

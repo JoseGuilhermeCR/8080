@@ -4,4 +4,6 @@
 INSTR(hlt) {
 	// NOP; PC = PC - 1
 	--emu->i8080.PC;
+
+	return 7;
 }
