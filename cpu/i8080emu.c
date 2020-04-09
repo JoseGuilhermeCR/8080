@@ -4,20 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main(int argc, char **argv) {
-	i8080emu *i = i8080emu_create();
-	i8080emu_load_program_into_memory(i, "invaders/invaders");
-	
-	while (true) {
-		printf("Total cycles run: %u\n", i8080emu_run_cycles(i, 500));
-		i8080emu_print_registers(i);
-	}
-
-	i8080emu_destroy(i);
-
-	return 0;
-}
-
 // 1 for numbers with even number of 1 bits and 0 for numbers with odd number of 1 bits.
 const uint8_t parity_table[0x100] = {
 	1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 
@@ -99,14 +85,14 @@ i8080emu *i8080emu_create() {
 }
 
 /* We may want to choose where in memory the program will be loaded. */
-void i8080emu_load_program_into_memory(i8080emu *emu, const char *filename) {
+void i8080emu_load_program_into_memory(i8080emu *emu, const char *filename, uint16_t offset) {
 	FILE *file = fopen(filename, "rb");
 
 	fseek(file, 0, SEEK_END);
 	long size = ftell(file);
 	fseek(file, 0, SEEK_SET);
 
-	fread(emu->memory, size, 1, file);
+	fread(emu->memory + offset, size, 1, file);
 
 	fclose(file);
 }

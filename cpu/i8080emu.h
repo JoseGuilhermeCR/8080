@@ -42,7 +42,7 @@ extern const uint8_t (*instruction_table[0x100]) (i8080emu *emu);
 
 /* Setup Stuff. */
 i8080emu *i8080emu_create();
-void i8080emu_load_program_into_memory(i8080emu *emu, const char *filename);
+void i8080emu_load_program_into_memory(i8080emu *emu, const char *filename, uint16_t offset);
 void i8080emu_destroy(i8080emu *emu);
 
 /* Emulation Stuff. */

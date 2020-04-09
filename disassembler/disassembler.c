@@ -56,7 +56,7 @@ const char *instruction_lookup[0x100] = {
 	"RZ", "RET", "JZ\t", "NOP", "CZ\t", "CALL\t", "ACI\t#", "RST\t1",
 	"RNC", "POP\tD", "JNC\t", "OUT\t#", "CNC\t", "PUSH\tD", "SUI\t#", "RST\t2",
 	"RC", "NOP", "JC\t", "IN\t#", "CC\t", "NOP", "SBI\t#", "RST\t3",
-	"RPO", "POP\t", "JPO\t", "XTHL", "CPO\t", "PUSH\tH", "ANI\t#", "RST\t4",
+	"RPO", "POP\tH", "JPO\t", "XTHL", "CPO\t", "PUSH\tH", "ANI\t#", "RST\t4",
 	"RPE", "PCHL", "JPE\t", "XCHG", "CPE\t", "NOP", "XRI\t#", "RST\t5",
 	"RP", "POP\tPSW", "JP\t", "DI", "CP\t", "PUSH\tPSW", "ORI\t#", "RST\t6",
 	"RM", "SPHL", "JM\t", "EI\t", "CM\t", "NOT", "CPI\t#", "RST\t7"

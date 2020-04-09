@@ -22,8 +22,9 @@ uint8_t return_with_condition(i8080emu *emu, Flags flag, bool value) {
 
 void save_pc_in_stack(i8080emu *emu) {
 	// Saves PC in stack.
-	emu->memory[emu->i8080.SP - 1] = HB(emu->i8080.PC);
-	emu->memory[emu->i8080.SP - 2] = LB(emu->i8080.PC);
+	emu->memory[(uint16_t)(emu->i8080.SP - 1)] = HB(emu->i8080.PC);
+	emu->memory[(uint16_t)(emu->i8080.SP - 2)] = LB(emu->i8080.PC);
+	emu->i8080.SP -= 2;
 }
 
 void call_addr(i8080emu *emu) {
@@ -33,8 +34,6 @@ void call_addr(i8080emu *emu) {
 	// When any kind of return occurs, PC needs to be at the next instruction.
 	emu->i8080.PC += 3;
 	save_pc_in_stack(emu);
-
-	emu->i8080.SP -= 2;
 
 	// Set PC = addr
 	emu->i8080.PC = addr;
@@ -211,7 +210,7 @@ POP_INSTR(psw,A,F)
 #define PUSH_INSTR(r,R,R1)	\
 	INSTR(push_##r)	{	\
 		emu->memory[emu->i8080.SP - 2] = emu->i8080.R1;	\
-		emu->memory[emu->i8080.SP - 1] = emu->i8080.R1;	\
+		emu->memory[emu->i8080.SP - 1] = emu->i8080.R;	\
 		emu->i8080.SP -= 2;				\
 		++emu->i8080.PC;				\
 		return 11;					\
