@@ -9,7 +9,11 @@
 #define LB(x) (x & 0x00ff)	// LOW_BYTE 
 #define LN(x) (x & 0xf)		// LOW_NIBBLE
 
-/* Bits 4, 3 and 1 (starting from 0) don't have use. */
+#define RESET_FLAG 0x02
+
+/* Bits 4, 3 and 1 (starting from 0) don't have use. And
+ * have default values. The Flag Register should aways be:
+ * |S,Z,0,A,0,P,1,C| */
 typedef enum {
 	FLAG_S = 0x1 << 7,	// Sign Flag.
 	FLAG_Z = 0x1 << 6,	// Zero Flag.
@@ -42,7 +46,7 @@ extern const uint8_t (*instruction_table[0x100]) (i8080emu *emu);
 
 /* Setup Stuff. */
 i8080emu *i8080emu_create();
-void i8080emu_load_program_into_memory(i8080emu *emu, const char *filename, uint16_t offset);
+void i8080emu_load_program_into_memory(i8080emu *emu, const char *filename, uint16_t offset, bool print_info);
 void i8080emu_destroy(i8080emu *emu);
 
 /* Emulation Stuff. */

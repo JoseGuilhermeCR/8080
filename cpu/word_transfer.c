@@ -87,5 +87,7 @@ INSTR(sphl) {
 	// SP = HL.
 	emu->i8080.SP = (emu->i8080.H << 8) | emu->i8080.L;
 
+	++emu->i8080.PC;
+
 	return 5;
 }

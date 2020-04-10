@@ -67,14 +67,14 @@ i8080emu *i8080emu_create() {
 
 	// Set all registers to 0.
 	emu->i8080.A = 0x00;
-	emu->i8080.F = 0x00;
+	emu->i8080.F = RESET_FLAG;
 	emu->i8080.B = 0x00;
 	emu->i8080.C = 0x00;
 	emu->i8080.D = 0x00;
 	emu->i8080.E = 0x00;
 	emu->i8080.H = 0x00;
 	emu->i8080.L = 0x00;
-	emu->i8080.PC  = 0x0000; //0x0000;
+	emu->i8080.PC  = 0x0000;
 	emu->i8080.SP  = 0x0000;
 
 	// Allocate memory, for now 65536 bytes (max possible).
@@ -85,16 +85,23 @@ i8080emu *i8080emu_create() {
 }
 
 /* We may want to choose where in memory the program will be loaded. */
-void i8080emu_load_program_into_memory(i8080emu *emu, const char *filename, uint16_t offset) {
+void i8080emu_load_program_into_memory(i8080emu *emu, const char *filename, uint16_t offset, bool print_info) {
 	FILE *file = fopen(filename, "rb");
 
-	fseek(file, 0, SEEK_END);
-	long size = ftell(file);
-	fseek(file, 0, SEEK_SET);
+	if (file) {
+		fseek(file, 0, SEEK_END);
+		long size = ftell(file);
+		fseek(file, 0, SEEK_SET);
 
-	fread(emu->memory + offset, size, 1, file);
+		fread(emu->memory + offset, size, 1, file);
 
-	fclose(file);
+		fclose(file);
+
+		if (print_info) 
+			printf("Loaded file %s with size %li and offset %u.\n",  filename, size, offset);
+	} else {
+		fprintf(stderr, "Couldn't load file %s.\n", filename);
+	}
 }
 
 void i8080emu_destroy(i8080emu *emu) {
