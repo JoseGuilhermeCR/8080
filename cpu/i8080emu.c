@@ -150,12 +150,18 @@ void i8080emu_print_registers(i8080emu *emu) {
 		"D: %02x E: %02x\n"
 		"H: %02x L: %02x\n"
 		"SP: %04x\n"
-		"PC: %04x\n",
+		"PC: %04x\n"
+		"S: %u Z: %u A: %u P: %u C: %u\n",
 		emu->i8080.A,  emu->i8080.F,
 		emu->i8080.B,  emu->i8080.C,
 		emu->i8080.D,  emu->i8080.E,
 		emu->i8080.H,  emu->i8080.L,
 		emu->i8080.SP,
-		emu->i8080.PC
+		emu->i8080.PC,
+		i8080_get_flag(&emu->i8080, FLAG_S),
+		i8080_get_flag(&emu->i8080, FLAG_Z),
+		i8080_get_flag(&emu->i8080, FLAG_A),
+		i8080_get_flag(&emu->i8080, FLAG_P),
+		i8080_get_flag(&emu->i8080, FLAG_C)
 	);
 }

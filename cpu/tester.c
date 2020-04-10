@@ -1,4 +1,5 @@
 #include "i8080emu.h"
+#include "../disassembler/disassembler.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -19,8 +20,13 @@ void make_test(const char *filename) {
 
 	emu->i8080.PC = 0x0100;
 	while (true) {
-		printf("About to execute instruction: %02X\n", emu->memory[emu->i8080.PC]);
-		i8080emu_run_cycles(emu, 1); // Will never execute more than one instruction.
+		puts("Will execute now: ");
+		// Disassembles next instruction and print on screen.
+		disassemble_8080(emu->memory, emu->i8080.PC);
+		// Executes one instruction (all instructions take more than 1 cycle).
+		i8080emu_run_cycles(emu, 1);
+		
+		puts("Registers after execution:");
 		i8080emu_print_registers(emu);
 
 		if (emu->i8080.PC == 0x0005) {
@@ -41,9 +47,11 @@ void make_test(const char *filename) {
 		}
 
 		if (emu->i8080.PC == 0) {
-			printf("\n Error occurred!");
+			puts("Error occurred!");
 			exit(1);
 		}
+
+		puts("");
 	}
 
 	i8080emu_destroy(emu);

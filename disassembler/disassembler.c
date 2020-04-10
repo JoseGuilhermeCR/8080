@@ -86,6 +86,7 @@ uint8_t disassemble_8080(const uint8_t *buffer, uint32_t pc) {
 	return bytes;
 }
 
+#ifndef WITH_DISASSEMBLER
 int main(int argc, char **argv) {
 	if (argc < 2) {
 		printf("Error: Please provide the file to be disassembled.\n");
@@ -116,3 +117,4 @@ int main(int argc, char **argv) {
 
 	return 0;
 }
+#endif
