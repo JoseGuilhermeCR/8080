@@ -34,6 +34,7 @@ typedef struct {
 	uint8_t L;
 	uint16_t SP;	// Stack Pointer.
 	uint16_t PC;	// Program Counter.
+	uint8_t INTE;	// Control for interrupts.
 } i8080;
 
 typedef struct {
@@ -349,6 +350,8 @@ INSTR(push_psw);
 /* Constrol Instructions */
 INSTR(nop);
 INSTR(hlt);
+INSTR(ei);
+INSTR(di);
 
 /* Help */
 uint8_t get_byte_hl(const i8080emu *emu);

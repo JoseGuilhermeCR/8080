@@ -57,8 +57,8 @@ const uint8_t (*instruction_table[0x100]) (i8080emu *emu) = {
 	rc, nop, jc, NULL /* IN */, cc, nop, sbi, rst_3,
 	rpo, pop_h, jpo, xthl, cpo, push_h, ani, rst_4,
 	rpe, pchl, jpe, xchg, cpe, nop, xri, rst_5,
-	rp, pop_psw, jp, NULL /* DI */, cp, push_psw, ori, rst_6,
-	rm, sphl, jm, NULL /* EI */, cm, nop, cpi, rst_7
+	rp, pop_psw, jp, di, cp, push_psw, ori, rst_6,
+	rm, sphl, jm, di, cm, nop, cpi, rst_7
 };
 
 /* Setup functions */
@@ -76,6 +76,7 @@ i8080emu *i8080emu_create() {
 	emu->i8080.L = 0x00;
 	emu->i8080.PC  = 0x0000;
 	emu->i8080.SP  = 0x0000;
+	emu->i8080.INTE = 1;	// Interrupt system starts activated.
 
 	// Allocate memory, for now 65536 bytes (max possible).
 	emu->memory = malloc(sizeof(uint8_t) * 0x10000);
