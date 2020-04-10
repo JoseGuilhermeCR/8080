@@ -20,7 +20,7 @@ MVI_INSTR(a,A)
 
 INSTR(mvi_m) {
 	// Stores byte in (HL).
-	emu->memory[(emu->i8080.H << 8) | emu->i8080.L] = get_byte_from_instruction(emu);
+	i8080emu_write_byte_memory(emu, (emu->i8080.H << 8) | emu->i8080.L, get_byte_from_instruction(emu));
 	emu->i8080.PC += 2;
 
 	return 10;
@@ -29,9 +29,9 @@ INSTR(mvi_m) {
 /* Macro for defining the stax instructions */
 #define STAX_INSTR(r,R,R1)	\
 	INSTR(stax_##r) {	\
-		emu->memory[(emu->i8080.R << 8) | emu->i8080.R1] = emu->i8080.A;	\
-		++emu->i8080.PC;							\
-		return 7;								\
+		i8080emu_write_byte_memory(emu, (emu->i8080.R << 8) | emu->i8080.R1, emu->i8080.A);	\
+		++emu->i8080.PC;									\
+		return 7;										\
 	}
 
 STAX_INSTR(b,B,C)
@@ -39,7 +39,7 @@ STAX_INSTR(d,D,E)
 
 INSTR(sta) {
 	// Stores A in addr.
-	emu->memory[get_word_from_instruction(emu)] = emu->i8080.A;
+	i8080emu_write_byte_memory(emu, get_word_from_instruction(emu), emu->i8080.A);
 	emu->i8080.PC += 3;
 
 	return 13;
@@ -48,9 +48,9 @@ INSTR(sta) {
 /* Macro for defining the ldax instructions */
 #define LDAX_INSTR(r,R,R1)	\
 	INSTR(ldax_##r)	{	\
-		emu->i8080.A = emu->memory[(emu->i8080.R << 8) | emu->i8080.R1];	\
-		++emu->i8080.PC;							\
-		return 7;								\
+		emu->i8080.A = i8080emu_read_byte_memory(emu, (emu->i8080.R << 8) | emu->i8080.R1);	\
+		++emu->i8080.PC;									\
+		return 7;										\
 	}
 
 LDAX_INSTR(b,B,C)
@@ -58,7 +58,7 @@ LDAX_INSTR(d,D,E)
 
 INSTR(lda) {
 	// Loads byte in (word) to A.
-	emu->i8080.A = emu->memory[get_word_from_instruction(emu)];
+	emu->i8080.A = i8080emu_read_byte_memory(emu, get_word_from_instruction(emu));
 	emu->i8080.PC += 3;
 
 	return 13;
@@ -80,9 +80,9 @@ INSTR(lda) {
 
 #define MOV_MR_INSTR(r,r1,R)	\
 	INSTR(mov_##r##r1) {	\
-		emu->memory[(emu->i8080.H << 8) | emu->i8080.L] = emu->i8080.R;	\
-		++emu->i8080.PC;						\
-		return 7;							\
+		i8080emu_write_byte_memory(emu, (emu->i8080.H << 8) | emu->i8080.L, emu->i8080.R);	\
+		++emu->i8080.PC;									\
+		return 7;										\
 	}
 
 MOV_INSTR(b,b,B,B)

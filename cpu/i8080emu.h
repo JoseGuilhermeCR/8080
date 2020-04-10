@@ -348,9 +348,14 @@ INSTR(hlt);
 
 /* Help */
 uint8_t get_byte_hl(const i8080emu *emu);
-uint16_t get_word_from_instruction(i8080emu *emu);
-uint8_t get_byte_from_instruction(i8080emu *emu);
+uint16_t get_word_from_instruction(const i8080emu *emu);
+uint8_t get_byte_from_instruction(const i8080emu *emu);
 
+/* Memory manipulation */
+void i8080emu_write_byte_memory(i8080emu *emu, uint16_t addr, uint8_t byte);
+void i8080emu_write_word_memory(i8080emu *emu, uint16_t addr, uint16_t word);
+uint8_t i8080emu_read_byte_memory(const i8080emu *emu, uint16_t addr);
+uint16_t i8080emu_read_word_memory(const i8080emu *emu, uint16_t addr);
 /* Debug Stuff. */
 void i8080emu_print_registers(i8080emu  *emu);
 

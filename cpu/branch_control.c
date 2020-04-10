@@ -2,7 +2,7 @@
 
 void return_from_subroutine(i8080emu *emu) {
 	// Set's PC to the address contained at SP and SP+1.
-	emu->i8080.PC = (emu->memory[emu->i8080.SP + 1] << 8) | emu->memory[emu->i8080.SP];
+	emu->i8080.PC = i8080emu_read_word_memory(emu, emu->i8080.SP);
 	emu->i8080.SP += 2;
 
 }
@@ -22,8 +22,7 @@ uint8_t return_with_condition(i8080emu *emu, Flags flag, bool value) {
 
 void save_pc_in_stack(i8080emu *emu) {
 	// Saves PC in stack.
-	emu->memory[(uint16_t)(emu->i8080.SP - 1)] = HB(emu->i8080.PC);
-	emu->memory[(uint16_t)(emu->i8080.SP - 2)] = LB(emu->i8080.PC);
+	i8080emu_write_word_memory(emu, emu->i8080.SP - 2, emu->i8080.PC);
 	emu->i8080.SP -= 2;
 }
 
@@ -194,11 +193,11 @@ INSTR(cm) {
 // Pops value from stack and put in register pair RR1.
 #define POP_INSTR(r,R,R1)	\
 	INSTR(pop_##r)	{	\
-		emu->i8080.R1 = emu->memory[emu->i8080.SP];	\
-		emu->i8080.R = emu->memory[emu->i8080.SP + 1];	\
-		emu->i8080.SP += 2;				\
-		++emu->i8080.PC;				\
-		return 10;					\
+		emu->i8080.R1 = i8080emu_read_byte_memory(emu, emu->i8080.SP);		\
+		emu->i8080.R = i8080emu_read_byte_memory(emu, emu->i8080.SP + 1);	\
+		emu->i8080.SP += 2;							\
+		++emu->i8080.PC;							\
+		return 10;								\
 	}
 
 POP_INSTR(b,B,C)
@@ -209,11 +208,11 @@ POP_INSTR(psw,A,F)
 // Pushes value from register pair RR1 into stack.
 #define PUSH_INSTR(r,R,R1)	\
 	INSTR(push_##r)	{	\
-		emu->memory[emu->i8080.SP - 2] = emu->i8080.R1;	\
-		emu->memory[emu->i8080.SP - 1] = emu->i8080.R;	\
-		emu->i8080.SP -= 2;				\
-		++emu->i8080.PC;				\
-		return 11;					\
+		i8080emu_write_byte_memory(emu, emu->i8080.SP - 2, emu->i8080.R1);	\
+		i8080emu_write_byte_memory(emu, emu->i8080.SP - 1, emu->i8080.R);	\
+		emu->i8080.SP -= 2;							\
+		++emu->i8080.PC;							\
+		return 11;								\
 	}
 
 PUSH_INSTR(b,B,C)

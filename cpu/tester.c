@@ -1,5 +1,9 @@
 #include "i8080emu.h"
+
+#ifdef WITH_DISASSEMBLER
 #include "../disassembler/disassembler.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -16,31 +20,30 @@ void make_test(const char *filename) {
 	i8080emu_load_program_into_memory(emu, filename, 0x100);
 
 	// Put a return instruction where the test will make a call.
-	emu->memory[0x0005] = 0xc9;
+	i8080emu_write_byte_memory(emu, 0x0005, 0xC9);
 
 	emu->i8080.PC = 0x0100;
 	while (true) {
+		#ifdef WITH_DISASSEMBLER
 		puts("Will execute now: ");
-		// Disassembles next instruction and print on screen.
 		disassemble_8080(emu->memory, emu->i8080.PC);
-		// Executes one instruction (all instructions take more than 1 cycle).
+		#endif
+
 		i8080emu_run_cycles(emu, 1);
-		
-		puts("Registers after execution:");
-		i8080emu_print_registers(emu);
+//		puts("Registers after execution:");
+//		i8080emu_print_registers(emu);
 
 		if (emu->i8080.PC == 0x0005) {
-			printf("Called 0005\n");
-			printf("Value in C: %u\n", emu->i8080.C);
-
 			if (emu->i8080.C == 9) {
 				uint16_t addr = (emu->i8080.D << 8) | emu->i8080.E;
-				while (emu->memory[addr] != '$') {
-					putchar(emu->memory[addr]);
+
+				uint8_t byte;
+				while ((byte = i8080emu_read_byte_memory(emu, addr)) != '$') {
+					putchar(byte);
 					++addr;
 				}
 			} else if (emu->i8080.C == 5) {
-				printf("%c", emu->i8080.C);
+				printf("%c", emu->i8080.E);
 			}
 
 			emu->i8080.PC = 0x0100;
@@ -50,8 +53,6 @@ void make_test(const char *filename) {
 			puts("Error occurred!");
 			exit(1);
 		}
-
-		puts("");
 	}
 
 	i8080emu_destroy(emu);

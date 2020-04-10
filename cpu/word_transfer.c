@@ -5,10 +5,10 @@
 /* Macro for defining lxi instructions */
 #define LXI_INSTR(r,R,R1)						\
 	INSTR(lxi_##r) {						\
-		emu->i8080.R1 = emu->memory[emu->i8080.PC + 1];		\
-		emu->i8080.R  = emu->memory[++emu->i8080.PC + 2]; 	\
-		emu->i8080.PC += 3;					\
-		return 10;						\
+		emu->i8080.R1 = i8080emu_read_byte_memory(emu, emu->i8080.PC + 1);	\
+		emu->i8080.R = i8080emu_read_byte_memory(emu, emu->i8080.PC + 2);	\
+		emu->i8080.PC += 3;							\
+		return 10;								\
 	}
 		
 
@@ -30,9 +30,8 @@ INSTR(shld) {
 	// First, put address into a variable.
 	uint16_t addr = get_word_from_instruction(emu);
 
-	// Places HL in addr, addr+1 (Little Endian here!)
-	emu->memory[addr] = emu->i8080.L;
-	emu->memory[addr + 1] = emu->i8080.H;
+	// Places HL in memory.
+	i8080emu_write_word_memory(emu, addr, (emu->i8080.H << 8) | emu->i8080.L);
 
 	emu->i8080.PC += 3;
 
@@ -45,8 +44,8 @@ INSTR(lhld) {
 	uint16_t addr = get_word_from_instruction(emu);
 
 	// Loads the value from memory.
-	emu->i8080.L = emu->memory[addr];
-	emu->i8080.H = emu->memory[addr + 1];
+	emu->i8080.L = i8080emu_read_byte_memory(emu, addr);
+	emu->i8080.H = i8080emu_read_byte_memory(emu, addr + 1);
 
 	emu->i8080.PC += 3;
 
@@ -58,11 +57,10 @@ INSTR(xthl) {
 	uint8_t H = emu->i8080.H;
 	uint8_t L = emu->i8080.L;
 
-	emu->i8080.H = emu->memory[emu->i8080.SP + 1];
-	emu->i8080.L = emu->memory[emu->i8080.SP];
+	emu->i8080.H = i8080emu_read_byte_memory(emu, emu->i8080.SP + 1);
+	emu->i8080.L = i8080emu_read_byte_memory(emu, emu->i8080.SP);
 
-	emu->memory[emu->i8080.SP + 1] = H;
-	emu->memory[emu->i8080.SP] = L;
+	i8080emu_write_word_memory(emu, emu->i8080.SP, (H << 8) | L);
 
 	++emu->i8080.PC;
 

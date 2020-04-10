@@ -28,13 +28,12 @@ INR_INSTR(a,A)
 
 INSTR(inr_m) {
 	// Increments byte at (HL).
-	uint8_t *byte = &emu->memory[(emu->i8080.H << 8) | emu->i8080.L];	// Points to byte at (HL).
+	uint8_t byte = get_byte_hl(emu) + 1;						// Get byte from memory
+	i8080emu_write_byte_memory(emu, (emu->i8080.H << 8) | emu->i8080.L, byte);	// Save incremented byte.
 
-	++(*byte);
-
-	i8080_set_flag(&emu->i8080, FLAG_Z, *byte == 0x00);		// Zero Flag.
-	i8080_set_flag(&emu->i8080, FLAG_S, *byte & 0x80);		// Sign Flag.
-	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[*byte]);	// Parity Flag.
+	i8080_set_flag(&emu->i8080, FLAG_Z, byte == 0x00);		// Zero Flag.
+	i8080_set_flag(&emu->i8080, FLAG_S, byte & 0x80);		// Sign Flag.
+	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[byte]);	// Parity Flag.
 
 	++emu->i8080.PC;
 
@@ -64,15 +63,12 @@ DCR_INSTR(a,A)
 
 INSTR(dcr_m) {
 	// Decrements byte at (HL).
-	uint8_t *byte = &emu->memory[(emu->i8080.H << 8) | emu->i8080.L]; // Points to the wanted byte.
+	uint8_t byte = get_byte_hl(emu) - 1;						// Get byte from memory
+	i8080emu_write_byte_memory(emu, (emu->i8080.H << 8) | emu->i8080.L, byte);	// Save incremented byte.
 
-	// TODO: know how the A flag should be set in a subtraction.
-
-	--(*byte);
-
-	i8080_set_flag(&emu->i8080, FLAG_Z, *byte == 0x00);		// Zero Flag.
-	i8080_set_flag(&emu->i8080, FLAG_S, *byte & 0x80);		// Sign Flag.
-	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[*byte]);	// Parity Flag.
+	i8080_set_flag(&emu->i8080, FLAG_Z, byte == 0x00);		// Zero Flag.
+	i8080_set_flag(&emu->i8080, FLAG_S, byte & 0x80);		// Sign Flag.
+	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[byte]);	// Parity Flag.
 	++emu->i8080.PC;
 
 	return 10;

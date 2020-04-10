@@ -129,17 +129,35 @@ unsigned i8080emu_run_cycles(i8080emu *emu, unsigned cycles) {
 	return done_cycles;
 }
 
+/* Memory manipulation */
+void i8080emu_write_byte_memory(i8080emu *emu, uint16_t addr, uint8_t byte) {
+	emu->memory[addr] = byte;
+}
+
+void i8080emu_write_word_memory(i8080emu *emu, uint16_t addr, uint16_t word) {
+	emu->memory[addr] = LB(word);
+	emu->memory[addr + 1] = HB(word);
+}
+
+uint8_t i8080emu_read_byte_memory(const i8080emu *emu, uint16_t addr) {
+	return emu->memory[addr];
+}
+
+uint16_t i8080emu_read_word_memory(const i8080emu *emu, uint16_t addr) {
+	return ((emu->memory[addr + 1] << 8) | emu->memory[addr]);
+}
+
 /* Help */
 uint8_t get_byte_hl(const i8080emu *emu) {
-	return emu->memory[(emu->i8080.H << 8) | emu->i8080.L];
+	return i8080emu_read_byte_memory(emu, (emu->i8080.H << 8) | emu->i8080.L);
 }
 
-uint16_t get_word_from_instruction(i8080emu *emu) {
-	return (emu->memory[emu->i8080.PC + 2] << 8) | emu->memory[emu->i8080.PC + 1];
+uint16_t get_word_from_instruction(const i8080emu *emu) {
+	return i8080emu_read_word_memory(emu, emu->i8080.PC + 1);
 }
 
-uint8_t get_byte_from_instruction(i8080emu *emu) {
-	return emu->memory[emu->i8080.PC + 1];
+uint8_t get_byte_from_instruction(const i8080emu *emu) {
+	return i8080emu_read_byte_memory(emu, emu->i8080.PC + 1);
 }
 
 /* Debug Stuff */
