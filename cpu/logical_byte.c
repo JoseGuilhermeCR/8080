@@ -14,17 +14,14 @@ void set_logical_cmp_flags(i8080 *i8080, uint8_t value) {
 	// and the flags set according to the result.
 	uint8_t result = i8080->A - value;
 
-	i8080_set_flag(i8080, FLAG_Z, result == 0x00);		// Zero Flag.
+	i8080_set_flag(i8080, FLAG_Z, i8080->A == value);	// Zero Flag.
 	i8080_set_flag(i8080, FLAG_S, result & 0x80);		// Sign Flag.
 	i8080_set_flag(i8080, FLAG_P, parity_table[result]);	// Parity Flag.
 
-	bool carry = value > i8080->A;
-	bool equal_sign = (i8080->A & 0x80) && (value & 0x80);
-
 	// Carry has it's value reversed if the numbers differ in sign.
-	i8080_set_flag(i8080, FLAG_C, (equal_sign) ? carry : !carry);	// Carry Flag.
+	i8080_set_flag(i8080, FLAG_C, i8080->A < value);	// Carry Flag.
 	// TODO: I think this could be wrong, I should be aware so I can check later!
-	i8080_set_flag(i8080, FLAG_A, LB(value) > LB(i8080->A));	// Auxiliary Carry Flag.
+	i8080_set_flag(i8080, FLAG_A, LN(i8080->A) < LN(value));// Auxiliary Carry Flag.
 }
 
 /* Logical And Instructions */

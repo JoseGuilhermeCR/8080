@@ -10,6 +10,7 @@
 void make_test(const char *filename);
 
 int main() {
+	//make_test("tests/CPUTEST.COM");
 	make_test("tests/8080PRE.COM");
 	make_test("tests/8080EXER.COM");
 
@@ -36,8 +37,8 @@ void make_test(const char *filename) {
 		i8080emu_run_cycles(emu, 1);
 
 		#ifdef WITH_DISASSEMBLER
-		printf("Registers after execution:\n");
-		i8080emu_print_registers(emu);
+//		printf("Registers after execution:\n");
+//		i8080emu_print_registers(emu);
 		#endif
 
 		if (emu->i8080.PC == 0x0005) {
@@ -52,9 +53,9 @@ void make_test(const char *filename) {
 
 				success = true;
 			} else if (emu->i8080.C == 2) {
-				printf("%c", emu->i8080.E);
-				emu->i8080.PC = 0x0100;
+				putchar((char)emu->i8080.E);
 			}
+
 		}
 
 		if (emu->i8080.PC == 0) {

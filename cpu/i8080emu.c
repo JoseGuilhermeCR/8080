@@ -130,7 +130,8 @@ unsigned i8080emu_run_cycles(i8080emu *emu, unsigned cycles) {
 		if (instruction_table[emu->memory[emu->i8080.PC]]) {
 			done_cycles += (*instruction_table[emu->memory[emu->i8080.PC]])(emu);
 		} else {
-			printf("Instruction %02x not implemented yet.\n", emu->memory[emu->i8080.PC]);
+			//printf("Instruction %02x not implemented yet.\n", emu->memory[emu->i8080.PC]);
+			++emu->i8080.PC;
 		}
 	}
 
