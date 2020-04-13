@@ -32,12 +32,18 @@ void make_test(const char *filename, bool step_by_step) {
 	uint16_t pc_before;
 	emu->i8080.PC = 0x0100;
 	while (true) {
+		#ifdef WITH_DISASSEMBLER
+		if (step_by_step)
+			printf("\nPress enter to execute: ");
+		disassemble_8080(emu->memory, emu->i8080.PC);
+		if (step_by_step)
+			fgetc(stdin);
+		#endif
+
 		pc_before = emu->i8080.PC;
 		i8080emu_run_cycles(emu, 1);
 
 		#ifdef WITH_DISASSEMBLER
-		printf("Executed now:\n");
-		disassemble_8080(emu->memory, pc_before);
 		printf("Registers after execution:\n");
 		i8080emu_print_registers(emu);
 		#endif
@@ -65,11 +71,6 @@ void make_test(const char *filename, bool step_by_step) {
 				printf("\nAn error occurred!\n");
 			}
 			break;
-		}
-
-		if (step_by_step) {
-			printf("Press any key to continue\n");
-			fgetc(stdin);
 		}
 	}
 
