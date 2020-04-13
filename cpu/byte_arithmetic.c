@@ -135,7 +135,7 @@ INSTR(adi) {
 	INSTR(adc_##r) {	\
 		uint8_t carry = i8080_get_flag(&emu->i8080, FLAG_C) ? 1 : 0;						\
 		i8080_set_flag(&emu->i8080, FLAG_C, (emu->i8080.A + emu->i8080.R + carry) > 255);			\
-		i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN((emu->i8080.R + carry))) > 15);		\
+		i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN(emu->i8080.R) + carry) > 15);		\
 		emu->i8080.A += emu->i8080.R + carry;									\
 		i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);						\
 		i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);						\
@@ -157,7 +157,7 @@ INSTR(adc_m) {
 	uint8_t byte = get_byte_hl(emu);
 
 	i8080_set_flag(&emu->i8080, FLAG_C, (emu->i8080.A + byte + carry) > 255);			// Carry Flag.
-	i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN((byte + carry))) > 15);		// Auxiliary Carry Flag.
+	i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN(byte) + carry) > 15);		// Auxiliary Carry Flag.
 
 	emu->i8080.A += byte + carry;
 	
@@ -176,9 +176,9 @@ INSTR(aci) {
 	uint8_t byte = get_byte_from_instruction(emu);
 
 	i8080_set_flag(&emu->i8080, FLAG_C, (emu->i8080.A + byte + carry) > 255);			// Carry Flag.
-	i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN(byte)) > 15);		// Auxiliary Carry Flag.
+	i8080_set_flag(&emu->i8080, FLAG_A, (LN(emu->i8080.A) + LN(byte) + carry) > 15);		// Auxiliary Carry Flag.
 
-	emu->i8080.A += byte;
+	emu->i8080.A += byte + carry;
 
 	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);				// Zero Flag.
 	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);				// Signal FLag.
@@ -302,3 +302,33 @@ INSTR(sbi) {
 	return 7;
 }
 
+INSTR(daa) {
+	uint16_t value = LN(emu->i8080.A);
+
+	if (value > 9) {
+		value += 6;
+
+		if (value & 0x10)
+			i8080_set_flag(&emu->i8080, FLAG_A, true);
+	}
+
+	value += HN(emu->i8080.A);
+
+	if (HN(value) > 9)
+		value += 96;
+
+	if (value > 0xFF)
+		i8080_set_flag(&emu->i8080, FLAG_C, true);
+	else
+		i8080_set_flag(&emu->i8080, FLAG_C, false);
+
+	emu->i8080.A = (uint8_t)value;
+
+	i8080_set_flag(&emu->i8080, FLAG_Z, emu->i8080.A == 0x00);
+	i8080_set_flag(&emu->i8080, FLAG_S, emu->i8080.A & 0x80);
+	i8080_set_flag(&emu->i8080, FLAG_P, parity_table[emu->i8080.A]);
+
+	++emu->i8080.PC;
+
+	return 4;
+}

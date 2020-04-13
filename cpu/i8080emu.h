@@ -8,6 +8,7 @@
 #define HB(x) (x & 0xff00) >> 8 // HIGH_BYTE
 #define LB(x) (x & 0x00ff)	// LOW_BYTE 
 #define LN(x) (x & 0xf)		// LOW_NIBBLE
+#define HN(x) (x & 0xf0) >> 4	// HIGH_NIBBLE
 
 #define RESET_FLAG 0x02
 
@@ -294,6 +295,7 @@ INSTR(dad_sp);
 INSTR(cma);
 INSTR(stc);
 INSTR(cmc);
+INSTR(daa);
 
 /* Branch Control Instructions */
 INSTR(rnz);

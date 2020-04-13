@@ -31,7 +31,7 @@ const uint8_t (*instruction_table[0x100]) (i8080emu *emu) = {
 	nop, dad_b, ldax_b, dcx_b, inr_c, dcr_c, mvi_c, rrc,
 	nop, lxi_d, stax_d, inx_d, inr_d, dcr_d, mvi_d, ral,
 	nop, dad_d, ldax_d, dcx_d, inr_e, dcr_e, mvi_e, rar,
-	nop, lxi_h, shld, inx_h, inr_h, dcr_h, mvi_h, NULL /* DAA */,
+	nop, lxi_h, shld, inx_h, inr_h, dcr_h, mvi_h, daa /* DAA */,
 	nop, dad_h, lhld, dcx_h, inr_l, dcr_l, mvi_l, cma,
 	nop, lxi_sp, sta, inx_sp, inr_m, dcr_m, mvi_m, stc,
 	nop, dad_sp, lda, dcx_sp, inr_a, dcr_a, mvi_a, cmc,

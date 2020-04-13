@@ -7,17 +7,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void make_test(const char *filename);
+void make_test(const char *filename, bool step_by_step);
 
 int main() {
-	//make_test("tests/CPUTEST.COM");
-	make_test("tests/8080PRE.COM");
-	make_test("tests/8080EXER.COM");
+	make_test("tests/MINE.COM", false);
+	make_test("tests/TEST.COM", true);
+//	make_test("tests/CPUTEST.COM", false);
+//	make_test("tests/8080PRE.COM", false);
+//	make_test("tests/8080EX1.COM");
 
 	return 0;
 }
 
-void make_test(const char *filename) {
+void make_test(const char *filename, bool step_by_step) {
 	printf("\n=====================================================\n");
 	bool success = false;
 
@@ -27,18 +29,17 @@ void make_test(const char *filename) {
 	// Put a return instruction where the test will make a call.
 	i8080emu_write_byte_memory(emu, 0x0005, 0xC9);
 
+	uint16_t pc_before;
 	emu->i8080.PC = 0x0100;
 	while (true) {
-		#ifdef WITH_DISASSEMBLER
-		printf("Will execute now:\n");
-		disassemble_8080(emu->memory, emu->i8080.PC);
-		#endif
-
+		pc_before = emu->i8080.PC;
 		i8080emu_run_cycles(emu, 1);
 
 		#ifdef WITH_DISASSEMBLER
-//		printf("Registers after execution:\n");
-//		i8080emu_print_registers(emu);
+		printf("Executed now:\n");
+		disassemble_8080(emu->memory, pc_before);
+		printf("Registers after execution:\n");
+		i8080emu_print_registers(emu);
 		#endif
 
 		if (emu->i8080.PC == 0x0005) {
@@ -59,9 +60,16 @@ void make_test(const char *filename) {
 		}
 
 		if (emu->i8080.PC == 0) {
-			if (!success)
-				printf("An error occurred!\n");
+			printf("\nGot to 0000, PC before = [%04x]%u", pc_before, pc_before);
+			if (!success) {
+				printf("\nAn error occurred!\n");
+			}
 			break;
+		}
+
+		if (step_by_step) {
+			printf("Press any key to continue\n");
+			fgetc(stdin);
 		}
 	}
 
