@@ -11,17 +11,16 @@ void make_test(const char *filename, bool step_by_step);
 
 int main() {
 	make_test("tests/MINE.COM", false);
-	make_test("tests/TEST.COM", true);
-//	make_test("tests/CPUTEST.COM", false);
-//	make_test("tests/8080PRE.COM", false);
-//	make_test("tests/8080EX1.COM");
+	make_test("tests/TEST.COM", false);
+	make_test("tests/CPUTEST.COM", false);
+	make_test("tests/8080PRE.COM", false);
+	make_test("tests/8080EXM.COM", false);
 
 	return 0;
 }
 
 void make_test(const char *filename, bool step_by_step) {
 	printf("\n=====================================================\n");
-	bool success = false;
 
 	i8080emu *emu = i8080emu_create();
 	i8080emu_load_program_into_memory(emu, filename, 0x100, true);
@@ -57,8 +56,6 @@ void make_test(const char *filename, bool step_by_step) {
 					putchar(byte);
 					++addr;
 				}
-
-				success = true;
 			} else if (emu->i8080.C == 2) {
 				putchar((char)emu->i8080.E);
 			}
@@ -67,9 +64,6 @@ void make_test(const char *filename, bool step_by_step) {
 
 		if (emu->i8080.PC == 0) {
 			printf("\nGot to 0000, PC before = [%04x]%u", pc_before, pc_before);
-			if (!success) {
-				printf("\nAn error occurred!\n");
-			}
 			break;
 		}
 	}
