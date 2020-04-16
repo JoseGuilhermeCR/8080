@@ -121,6 +121,8 @@ void i8080_set_flag(i8080 *i8080, Flags flag, bool value) {
 		i8080->F |= flag;
 	else
 		i8080->F &= ~flag;
+
+	i8080->F = (i8080->F & 0xD7) | 0x02;
 }
 
 unsigned i8080emu_run_cycles(i8080emu *emu, unsigned cycles) {
