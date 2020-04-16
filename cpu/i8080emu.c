@@ -67,7 +67,6 @@ i8080emu *i8080emu_create() {
 
 	// Set all registers to 0.
 	emu->i8080.A = 0x00;
-	emu->i8080.F = RESET_FLAG;
 	emu->i8080.B = 0x00;
 	emu->i8080.C = 0x00;
 	emu->i8080.D = 0x00;
@@ -76,6 +75,10 @@ i8080emu *i8080emu_create() {
 	emu->i8080.L = 0x00;
 	emu->i8080.PC  = 0x0000;
 	emu->i8080.SP  = 0x0000;
+
+	// Correct starting value for flags register.
+	emu->i8080.F = 0x02; 
+
 	emu->i8080.INTE = 1;	// Interrupt system starts activated.
 
 	// Allocate memory, for now 65536 bytes (max possible).

@@ -10,8 +10,6 @@
 #define LN(x) (x & 0xf)		// LOW_NIBBLE
 #define HN(x) (x & 0xf0) >> 4	// HIGH_NIBBLE
 
-#define RESET_FLAG 0x02
-
 /* Bits 4, 3 and 1 (starting from 0) don't have use. And
  * have default values. The Flag Register should aways be:
  * |S,Z,0,A,0,P,1,C| */
