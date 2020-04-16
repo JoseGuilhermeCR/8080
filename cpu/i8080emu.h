@@ -9,6 +9,7 @@
 #define LB(x) (x & 0x00ff)	// LOW_BYTE 
 #define LN(x) (x & 0xf)		// LOW_NIBBLE
 #define HN(x) (x & 0xf0) >> 4	// HIGH_NIBBLE
+#define C2(x) (~x + 1)		// Two's complement
 
 /* Bits 4, 3 and 1 (starting from 0) don't have use. And
  * have default values. The Flag Register should aways be:
