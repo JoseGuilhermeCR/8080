@@ -6,7 +6,7 @@ INSTR(rlc) {
 	uint8_t previous_bit7 = (emu->i8080.A & 0x80) >> 7;	// Save previous bit 7.
 
 	emu->i8080.A = (emu->i8080.A << 1) | previous_bit7;	// Shift 1 bit to the left.
-								// Bit 0 is set to previous bit 7.
+														// Bit 0 is set to previous bit 7.
 
 	i8080_set_flag(&emu->i8080, FLAG_C, previous_bit7);	// Carry Flag.
 
@@ -20,7 +20,7 @@ INSTR(rrc) {
 	uint8_t previous_bit0 = emu->i8080.A & 0x01;		// Save previous bit 0.
 	
 	emu->i8080.A = (emu->i8080.A >> 1) | (previous_bit0 << 7); 	// Shift 1 bit to the right.
-									// Bit 7 is set to previous bit 0.
+																// Bit 7 is set to previous bit 0.
 
 	i8080_set_flag(&emu->i8080, FLAG_C, previous_bit0);	// Carry Flag.
 
@@ -35,7 +35,7 @@ INSTR(ral) {
 	uint8_t previous_bit7 = emu->i8080.A & 0x80;	// Save previous bit 7.
 
 	emu->i8080.A = (emu->i8080.A << 1) | previous_cy;	// Shift 1 bit to the left.
-								// Bit 0 is set to previous carry flag.
+														// Bit 0 is set to previous carry flag.
 
 	i8080_set_flag(&emu->i8080, FLAG_C, previous_bit7);	// Carry Flag is set to previous bit 7
 

@@ -25,12 +25,12 @@ void set_logical_cmp_flags(i8080 *i8080, uint8_t value) {
 }
 
 /* Logical And Instructions */
-#define ANA_INSTR(r,R)	\
-	INSTR(ana_##r) {			\
-		emu->i8080.A &= emu->i8080.R;	\
-		set_logical_flags(&emu->i8080);	\
-		++emu->i8080.PC;		\
-		return 4;			\
+#define ANA_INSTR(r,R)\
+	INSTR(ana_##r) {\
+		emu->i8080.A &= emu->i8080.R;\
+		set_logical_flags(&emu->i8080);\
+		++emu->i8080.PC;\
+		return 4;\
 	}
 
 
@@ -61,12 +61,12 @@ INSTR(ani) {
 }
 
 /* Logical Xor Instructions */
-#define XRA_INSTR(r,R)	\
-	INSTR(xra_##r) {			\
-		emu->i8080.A ^= emu->i8080.R;	\
-		set_logical_flags(&emu->i8080);	\
-		++emu->i8080.PC;		\
-		return 4;			\
+#define XRA_INSTR(r,R)\
+	INSTR(xra_##r) {\
+		emu->i8080.A ^= emu->i8080.R;\
+		set_logical_flags(&emu->i8080);\
+		++emu->i8080.PC;\
+		return 4;\
 	}
 
 XRA_INSTR(b,B)
@@ -96,12 +96,12 @@ INSTR(xri) {
 }
 
 /* Logical Or Instructions */
-#define ORA_INSTR(r,R)	\
-	INSTR(ora_##r) {			\
-		emu->i8080.A |= emu->i8080.R;	\
-		set_logical_flags(&emu->i8080);	\
-		++emu->i8080.PC;		\
-		return 4;			\
+#define ORA_INSTR(r,R)\
+	INSTR(ora_##r) {\
+		emu->i8080.A |= emu->i8080.R;\
+		set_logical_flags(&emu->i8080);\
+		++emu->i8080.PC;\
+		return 4;\
 	}
 
 ORA_INSTR(b,B)
@@ -131,11 +131,11 @@ INSTR(ori) {
 }
 
 /* Logical Compare Instructions */
-#define CMP_INSTR(r,R)										\
-	INSTR(cmp_##r) {					 					\
-		set_logical_cmp_flags(&emu->i8080, emu->i8080.R);	\
-		++emu->i8080.PC;									\
-		return 4;											\
+#define CMP_INSTR(r,R)\
+	INSTR(cmp_##r) {\
+		set_logical_cmp_flags(&emu->i8080, emu->i8080.R);\
+		++emu->i8080.PC;\
+		return 4;\
 	}
 
 CMP_INSTR(b,B)

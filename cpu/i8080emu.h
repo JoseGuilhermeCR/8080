@@ -6,10 +6,10 @@
 #include <stdbool.h>
 
 #define HB(x) (x & 0xff00) >> 8 // HIGH_BYTE
-#define LB(x) (x & 0x00ff)	// LOW_BYTE 
-#define LN(x) (x & 0xf)		// LOW_NIBBLE
+#define LB(x) (x & 0x00ff)		// LOW_BYTE 
+#define LN(x) (x & 0xf)			// LOW_NIBBLE
 #define HN(x) (x & 0xf0) >> 4	// HIGH_NIBBLE
-#define C2(x) (~x + 1)		// Two's complement
+#define C2(x) (~x + 1)			// Two's complement
 
 /* Bits 4, 3 and 1 (starting from 0) don't have use. And
  * have default values. The Flag Register should aways be:
@@ -24,13 +24,13 @@ typedef enum {
 
 typedef struct {
 	/* Registers */
-	uint8_t A;	// AF is a register pair (PSW program status word).
+	uint8_t A;		// AF is a register pair (PSW program status word).
 	uint8_t F;
-	uint8_t B;	// BC is a register pair.
+	uint8_t B;		// BC is a register pair.
 	uint8_t C;
-	uint8_t D;	// DE is a register pair.
+	uint8_t D;		// DE is a register pair.
 	uint8_t E;
-	uint8_t H;	// HL is a register pair.
+	uint8_t H;		// HL is a register pair.
 	uint8_t L;
 	uint16_t SP;	// Stack Pointer.
 	uint16_t PC;	// Program Counter.

@@ -3,12 +3,12 @@
 /* 16 Bit Transfer Instructions */
 
 /* Macro for defining lxi instructions */
-#define LXI_INSTR(r,R,R1)						\
-	INSTR(lxi_##r) {						\
-		emu->i8080.R1 = i8080emu_read_byte_memory(emu, emu->i8080.PC + 1);	\
-		emu->i8080.R = i8080emu_read_byte_memory(emu, emu->i8080.PC + 2);	\
-		emu->i8080.PC += 3;							\
-		return 10;								\
+#define LXI_INSTR(r,R,R1)\
+	INSTR(lxi_##r) {\
+		emu->i8080.R1 = i8080emu_read_byte_memory(emu, emu->i8080.PC + 1);\
+		emu->i8080.R = i8080emu_read_byte_memory(emu, emu->i8080.PC + 2);\
+		emu->i8080.PC += 3;\
+		return 10;\
 	}
 		
 

@@ -3,11 +3,11 @@
 /* 8bit transfer instructions */
 
 /* Macro for defining the mvi instructions */
-#define MVI_INSTR(r,R)	\
+#define MVI_INSTR(r,R)\
 	INSTR(mvi_##r) {\
-		emu->i8080.R = get_byte_from_instruction(emu);	\
-		emu->i8080.PC += 2;				\
-		return 7;					\
+		emu->i8080.R = get_byte_from_instruction(emu);\
+		emu->i8080.PC += 2;\
+		return 7;\
 	}
 
 MVI_INSTR(b,B)
@@ -27,11 +27,11 @@ INSTR(mvi_m) {
 }
 
 /* Macro for defining the stax instructions */
-#define STAX_INSTR(r,R,R1)	\
-	INSTR(stax_##r) {	\
+#define STAX_INSTR(r,R,R1)\
+	INSTR(stax_##r) {\
 		i8080emu_write_byte_memory(emu, (emu->i8080.R << 8) | emu->i8080.R1, emu->i8080.A);	\
-		++emu->i8080.PC;									\
-		return 7;										\
+		++emu->i8080.PC;\
+		return 7;\
 	}
 
 STAX_INSTR(b,B,C)
@@ -46,11 +46,11 @@ INSTR(sta) {
 }
 
 /* Macro for defining the ldax instructions */
-#define LDAX_INSTR(r,R,R1)	\
-	INSTR(ldax_##r)	{	\
-		emu->i8080.A = i8080emu_read_byte_memory(emu, (emu->i8080.R << 8) | emu->i8080.R1);	\
-		++emu->i8080.PC;									\
-		return 7;										\
+#define LDAX_INSTR(r,R,R1)\
+	INSTR(ldax_##r)	{\
+		emu->i8080.A = i8080emu_read_byte_memory(emu, (emu->i8080.R << 8) | emu->i8080.R1);\
+		++emu->i8080.PC;\
+		return 7;\
 	}
 
 LDAX_INSTR(b,B,C)
@@ -64,25 +64,25 @@ INSTR(lda) {
 	return 13;
 }
 
-#define MOV_INSTR(r,r1,R,R1)	\
-	INSTR(mov_##r##r1) {	\
-		emu->i8080.R = emu->i8080.R1;	\
-		++emu->i8080.PC;		\
-		return 5;			\
+#define MOV_INSTR(r,r1,R,R1)\
+	INSTR(mov_##r##r1) {\
+		emu->i8080.R = emu->i8080.R1;\
+		++emu->i8080.PC;\
+		return 5;\
 	}
 
-#define MOV_RM_INSTR(r,r1,R)	\
-	INSTR(mov_##r##r1) {	\
-		emu->i8080.R = get_byte_hl(emu);	\
-		++emu->i8080.PC;			\
-		return 7;				\
+#define MOV_RM_INSTR(r,r1,R)\
+	INSTR(mov_##r##r1) {\
+		emu->i8080.R = get_byte_hl(emu);\
+		++emu->i8080.PC;\
+		return 7;\
 	}
 
-#define MOV_MR_INSTR(r,r1,R)	\
-	INSTR(mov_##r##r1) {	\
-		i8080emu_write_byte_memory(emu, (emu->i8080.H << 8) | emu->i8080.L, emu->i8080.R);	\
-		++emu->i8080.PC;									\
-		return 7;										\
+#define MOV_MR_INSTR(r,r1,R)\
+	INSTR(mov_##r##r1) {\
+		i8080emu_write_byte_memory(emu, (emu->i8080.H << 8) | emu->i8080.L, emu->i8080.R);\
+		++emu->i8080.PC;\
+		return 7;\
 	}
 
 MOV_INSTR(b,b,B,B)
