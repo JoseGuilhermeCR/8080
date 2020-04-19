@@ -10,12 +10,12 @@
 void make_test(const char *filename, bool step_by_step);
 
 int main() {
+	// It's stuck on this test. After changes in arithmetic instructions.
+
 //	make_test("tests/MINE.COM", false);
 	make_test("tests/TEST.COM", true);
 	make_test("tests/8080PRE.COM", false);
 	make_test("tests/8080EXM.COM", false);
-
-	// It's stuck on this test. After changes in arithmetic instructions.
 	make_test("tests/CPUTEST.COM", false);
 
 	return 0;
