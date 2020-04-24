@@ -6,25 +6,25 @@ extern "C" {
 }
 
 #include <iostream>
-#include "terminal/terminal.hh"
+//#include "terminal/terminal.hh"
 
-void make_test(const std::string &filename, bool step_by_step);
+void make_test(const std::string &filename, bool step_by_step/*, Terminal &term*/);
 
 int main() {
-	// It's stuck on this test. After changes in arithmetic instructions.
+	// It's stuck on this test. After changes in arithmetic instructions
 
 	//Terminal terminal;
 
 //	make_test("tests/MINE.COM", false);
-	make_test("cpu/tests/TEST.COM", true);
-	make_test("cpu/tests/8080PRE.COM", false);
-	make_test("cpu/tests/8080EXM.COM", false);
-	make_test("cpu/tests/CPUTEST.COM", false);
+	make_test("cpu/tests/TEST.COM", true/*, terminal*/);
+	make_test("cpu/tests/8080PRE.COM", false/*, terminal*/);
+	make_test("cpu/tests/8080EXM.COM", false/*, terminal*/);
+	make_test("cpu/tests/CPUTEST.COM", false/*, terminal*/);
 
 	return 0;
 }
 
-void make_test(const std::string &filename, bool step_by_step) {
+void make_test(const std::string &filename, bool step_by_step/*, Terminal &term*/) {
 	std::cout << "\n=====================================================\n";
 
 	i8080emu *emu = i8080emu_create();
@@ -35,7 +35,7 @@ void make_test(const std::string &filename, bool step_by_step) {
 
 	uint16_t pc_before;
 	emu->i8080.PC = 0x0100;
-	while (true) {
+	while (true/*!term.closed()*/) {
 		#ifdef WITH_DISASSEMBLER
 		if (step_by_step)
 			std::cout << "\nPress enter to execute: ";
@@ -59,12 +59,16 @@ void make_test(const std::string &filename, bool step_by_step) {
 				uint8_t byte;
 				while ((byte = i8080emu_read_byte_memory(emu, addr)) != '$') {
 					std::cout << byte;
+					//term.write_to_screen(byte);
 					++addr;
 				}
 			} else if (emu->i8080.C == 2) {
 				std::cout << emu->i8080.E;
+				//term.write_to_screen(emu->i8080.E);
 			}
 		}
+
+//		term.update();
 
 		if (emu->i8080.PC == 0) {
 			std::cout << "\nGot to 0000, PC before = " << std::hex << std::uppercase << pc_before << "H " << std::dec << pc_before;
