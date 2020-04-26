@@ -26,7 +26,7 @@ const uint8_t parity_table[0x100] = {
 
 /* Original NOP is instruction 0. There are some alternative opcodes in which I used nop. This
  *  is probably fine since they shouldn't even be used. */
-const uint8_t (*instruction_table[0x100]) (i8080emu *emu) = {
+const uint8_t (*instruction_table[0x100]) (i8080emu *const emu) = {
 	nop, lxi_b, stax_b, inx_b, inr_b, dcr_b, mvi_b, rlc,
 	nop, dad_b, ldax_b, dcx_b, inr_c, dcr_c, mvi_c, rrc,
 	nop, lxi_d, stax_d, inx_d, inr_d, dcr_d, mvi_d, ral,
@@ -89,7 +89,7 @@ i8080emu *i8080emu_create() {
 }
 
 /* We may want to choose where in memory the program will be loaded. */
-void i8080emu_load_program_into_memory(i8080emu *emu, const char *filename, uint16_t offset, bool print_info) {
+void i8080emu_load_program_into_memory(i8080emu *const emu, const char *filename, uint16_t offset, bool print_info) {
 	FILE *file = fopen(filename, "rb");
 
 	if (file) {
@@ -115,11 +115,11 @@ void i8080emu_destroy(i8080emu *emu) {
 }
 
 /* Emulation functions */
-bool i8080emu_get_flag(const i8080emu *emu, Flags flag) {
+bool i8080emu_get_flag(const i8080emu *const emu, Flags flag) {
 	return emu->i8080.F & flag;
 }
 
-void i8080emu_set_flag(i8080emu *emu, Flags flag, bool value) {
+void i8080emu_set_flag(i8080emu *const emu, Flags flag, bool value) {
 	if (value)
 		emu->i8080.F |= flag;
 	else
@@ -128,7 +128,7 @@ void i8080emu_set_flag(i8080emu *emu, Flags flag, bool value) {
 	emu->i8080.F = (emu->i8080.F & 0xD7) | 0x02;
 }
 
-unsigned i8080emu_run_cycles(i8080emu *emu, unsigned cycles) {
+unsigned i8080emu_run_cycles(i8080emu *const emu, unsigned cycles) {
 	unsigned done_cycles = 0;
 
 	while (done_cycles < cycles) {
@@ -144,44 +144,44 @@ unsigned i8080emu_run_cycles(i8080emu *emu, unsigned cycles) {
 }
 
 /* Memory manipulation */
-void i8080emu_write_byte_memory(i8080emu *emu, uint16_t addr, uint8_t byte) {
+void i8080emu_write_byte_memory(i8080emu *const emu, uint16_t addr, uint8_t byte) {
 	emu->memory[addr] = byte;
 }
 
-void i8080emu_write_word_memory(i8080emu *emu, uint16_t addr, uint16_t word) {
+void i8080emu_write_word_memory(i8080emu *const emu, uint16_t addr, uint16_t word) {
 	emu->memory[addr] = LB(word);
 	emu->memory[addr + 1] = HB(word);
 }
 
-uint8_t i8080emu_read_byte_memory(const i8080emu *emu, uint16_t addr) {
+uint8_t i8080emu_read_byte_memory(const i8080emu *const emu, uint16_t addr) {
 	return emu->memory[addr];
 }
 
-uint16_t i8080emu_read_word_memory(const i8080emu *emu, uint16_t addr) {
+uint16_t i8080emu_read_word_memory(const i8080emu *const emu, uint16_t addr) {
 	return ((emu->memory[addr + 1] << 8) | emu->memory[addr]);
 }
 
 /* Help */
-uint8_t get_byte_hl(const i8080emu *emu) {
+uint8_t get_byte_hl(const i8080emu *const emu) {
 	return i8080emu_read_byte_memory(emu, (emu->i8080.H << 8) | emu->i8080.L);
 }
 
-uint16_t get_word_from_instruction(const i8080emu *emu) {
+uint16_t get_word_from_instruction(const i8080emu *const emu) {
 	return i8080emu_read_word_memory(emu, emu->i8080.PC + 1);
 }
 
-uint8_t get_byte_from_instruction(const i8080emu *emu) {
+uint8_t get_byte_from_instruction(const i8080emu *const emu) {
 	return i8080emu_read_byte_memory(emu, emu->i8080.PC + 1);
 }
 
-void set_zsp(i8080emu *emu, uint8_t val) {
+void set_zsp(i8080emu *const emu, uint8_t val) {
 	i8080emu_set_flag(emu, FLAG_Z, val == 0x00);
 	i8080emu_set_flag(emu, FLAG_S, val & 0x80);
 	i8080emu_set_flag(emu, FLAG_P, parity_table[val]);
 }
 
 /* Debug Stuff */
-void i8080emu_print_registers(i8080emu *emu) {
+void i8080emu_print_registers(const i8080emu *const emu) {
 	printf(
 		"A: %02x F: %02x\n"
 		"B: %02x C: %02x\n"

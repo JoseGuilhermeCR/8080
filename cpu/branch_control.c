@@ -1,13 +1,13 @@
 #include "i8080emu.h"
 
-void return_from_subroutine(i8080emu *emu) {
+void return_from_subroutine(i8080emu *const emu) {
 	// Set's PC to the address contained at SP and SP+1.
 	emu->i8080.PC = i8080emu_read_word_memory(emu, emu->i8080.SP);
 	emu->i8080.SP += 2;
 
 }
 
-uint8_t return_with_condition(i8080emu *emu, Flags flag, bool value) {
+uint8_t return_with_condition(i8080emu *const emu, Flags flag, bool value) {
 	uint8_t cycles = 5;
 
 	if (i8080emu_get_flag(emu, flag) == value) {
@@ -20,13 +20,13 @@ uint8_t return_with_condition(i8080emu *emu, Flags flag, bool value) {
 	return cycles;
 }
 
-void save_pc_in_stack(i8080emu *emu) {
+void save_pc_in_stack(i8080emu *const emu) {
 	// Saves PC in stack.
 	i8080emu_write_word_memory(emu, emu->i8080.SP - 2, emu->i8080.PC);
 	emu->i8080.SP -= 2;
 }
 
-void call_addr(i8080emu *emu) {
+void call_addr(i8080emu *const emu) {
 	// Gets address from instruction.
 	uint16_t addr = get_word_from_instruction(emu);
 
@@ -38,7 +38,7 @@ void call_addr(i8080emu *emu) {
 	emu->i8080.PC = addr;
 }
 
-uint8_t call_addr_with_condition(i8080emu *emu, Flags flag, bool value) {
+uint8_t call_addr_with_condition(i8080emu *const emu, Flags flag, bool value) {
 	uint8_t cycles = 11;
 
 	if (i8080emu_get_flag(emu, flag) == value) {
@@ -51,11 +51,11 @@ uint8_t call_addr_with_condition(i8080emu *emu, Flags flag, bool value) {
 	return cycles;
 }
 
-void jump(i8080emu *emu) {
+void jump(i8080emu *const emu) {
 	emu->i8080.PC = get_word_from_instruction(emu);
 }
 
-uint8_t jump_with_condition(i8080emu *emu, Flags flag, bool value) {
+uint8_t jump_with_condition(i8080emu *const emu, Flags flag, bool value) {
 	if (i8080emu_get_flag(emu, flag) == value)
 		jump(emu);
 	else
@@ -221,7 +221,7 @@ PUSH_INSTR(h,H,L)
 PUSH_INSTR(psw,A,F)
 
 /* Interrupt specific calls */
-void call_interrupt_subroutine(i8080emu *emu, uint8_t number) {
+void call_interrupt_subroutine(i8080emu *const emu, uint8_t number) {
 	// Advance PC to next instruction before pushing into the stack.
 	++emu->i8080.PC;
 	save_pc_in_stack(emu);

@@ -9,7 +9,6 @@
 #define LB(x) (x & 0x00ff)	// LOW_BYTE 
 #define LN(x) (x & 0xf)		// LOW_NIBBLE
 #define HN(x) (x & 0xf0) >> 4	// HIGH_NIBBLE
-#define C2(x) (~x + 1)		// Two's complement
 
 /* Bits 4, 3 and 1 (starting from 0) don't have use. And
  * have default values. The Flag Register should aways be:
@@ -43,22 +42,22 @@ typedef struct {
 } i8080emu;
 
 extern const uint8_t parity_table[0x100];
-extern const uint8_t (*instruction_table[0x100]) (i8080emu *emu);
+extern const uint8_t (*instruction_table[0x100]) (i8080emu *const emu);
 
 /* Setup Stuff. */
 i8080emu *i8080emu_create();
-void i8080emu_load_program_into_memory(i8080emu *emu, const char *filename, uint16_t offset, bool print_info);
+void i8080emu_load_program_into_memory(i8080emu *const emu, const char *filename, uint16_t offset, bool print_info);
 void i8080emu_destroy(i8080emu *emu);
 
 /* Emulation Stuff. */
-bool i8080emu_get_flag(const i8080emu *emu, Flags flag);
-void i8080emu_set_flag(i8080emu *emu, Flags flag, bool value);
+bool i8080emu_get_flag(const i8080emu *const emu, Flags flag);
+void i8080emu_set_flag(i8080emu *const emu, Flags flag, bool value);
 
-unsigned i8080emu_run_cycles(i8080emu *emu, unsigned cycles);
+unsigned i8080emu_run_cycles(i8080emu *const emu, unsigned cycles);
 
 /* Instructions */
 /* Macro for declaring an instruction */
-#define INSTR(x) uint8_t x(i8080emu *emu)
+#define INSTR(x) uint8_t x(i8080emu *const emu)
 
 /* 8 Bit Transfer Instructions */
 INSTR(mvi_b);
@@ -355,19 +354,19 @@ INSTR(ei);
 INSTR(di);
 
 /* Help */
-uint8_t get_byte_hl(const i8080emu *emu);
-uint16_t get_word_from_instruction(const i8080emu *emu);
-uint8_t get_byte_from_instruction(const i8080emu *emu);
+uint8_t get_byte_hl(const i8080emu *const emu);
+uint16_t get_word_from_instruction(const i8080emu *const emu);
+uint8_t get_byte_from_instruction(const i8080emu *const emu);
 
 /* Memory manipulation */
-void i8080emu_write_byte_memory(i8080emu *emu, uint16_t addr, uint8_t byte);
-void i8080emu_write_word_memory(i8080emu *emu, uint16_t addr, uint16_t word);
-uint8_t i8080emu_read_byte_memory(const i8080emu *emu, uint16_t addr);
-uint16_t i8080emu_read_word_memory(const i8080emu *emu, uint16_t addr);
+void i8080emu_write_byte_memory(i8080emu *const emu, uint16_t addr, uint8_t byte);
+void i8080emu_write_word_memory(i8080emu *const emu, uint16_t addr, uint16_t word);
+uint8_t i8080emu_read_byte_memory(const i8080emu *const emu, uint16_t addr);
+uint16_t i8080emu_read_word_memory(const i8080emu *const emu, uint16_t addr);
 
-void set_zsp(i8080emu *emu, uint8_t val);
+void set_zsp(i8080emu *const emu, uint8_t val);
 
 /* Debug Stuff. */
-void i8080emu_print_registers(i8080emu  *emu);
+void i8080emu_print_registers(const i8080emu *const emu);
 
 #endif
