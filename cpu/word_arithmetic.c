@@ -53,7 +53,7 @@ INSTR(dcx_sp) {
 	INSTR(dad_##r)	{\
 		uint16_t HL = (emu->i8080.H << 8) | emu->i8080.L;\
 		uint16_t register_pair = (emu->i8080.R << 8) | emu->i8080.R1;\
-		i8080_set_flag(&emu->i8080, FLAG_C, (HL + register_pair) > 65535);\
+		i8080emu_set_flag(emu, FLAG_C, (HL + register_pair) > 65535);\
 		HL += register_pair;\
 		emu->i8080.L = LB(HL);\
 		emu->i8080.H = HB(HL);\
@@ -68,7 +68,7 @@ DAD_INSTR(h,H,L)
 INSTR(dad_sp) {
 	// HL += SP;
 	uint16_t HL = (emu->i8080.H << 8) | emu->i8080.L;	// Put together the values held by H and L.
-	i8080_set_flag(&emu->i8080, FLAG_C, (HL + emu->i8080.SP) > 65535);// Carry Flag.
+	i8080emu_set_flag(emu, FLAG_C, (HL + emu->i8080.SP) > 65535);// Carry Flag.
 
 	HL += emu->i8080.SP;
 	

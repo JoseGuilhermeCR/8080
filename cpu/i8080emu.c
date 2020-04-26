@@ -115,17 +115,17 @@ void i8080emu_destroy(i8080emu *emu) {
 }
 
 /* Emulation functions */
-bool i8080_get_flag(const i8080 *i8080, Flags flag) {
-	return i8080->F & flag;
+bool i8080emu_get_flag(const i8080emu *emu, Flags flag) {
+	return emu->i8080.F & flag;
 }
 
-void i8080_set_flag(i8080 *i8080, Flags flag, bool value) {
+void i8080emu_set_flag(i8080emu *emu, Flags flag, bool value) {
 	if (value)
-		i8080->F |= flag;
+		emu->i8080.F |= flag;
 	else
-		i8080->F &= ~flag;
+		emu->i8080.F &= ~flag;
 
-	i8080->F = (i8080->F & 0xD7) | 0x02;
+	emu->i8080.F = (emu->i8080.F & 0xD7) | 0x02;
 }
 
 unsigned i8080emu_run_cycles(i8080emu *emu, unsigned cycles) {
@@ -174,6 +174,12 @@ uint8_t get_byte_from_instruction(const i8080emu *emu) {
 	return i8080emu_read_byte_memory(emu, emu->i8080.PC + 1);
 }
 
+void set_zsp(i8080emu *emu, uint8_t val) {
+	i8080emu_set_flag(emu, FLAG_Z, val == 0x00);
+	i8080emu_set_flag(emu, FLAG_S, val & 0x80);
+	i8080emu_set_flag(emu, FLAG_P, parity_table[val]);
+}
+
 /* Debug Stuff */
 void i8080emu_print_registers(i8080emu *emu) {
 	printf(
@@ -190,10 +196,10 @@ void i8080emu_print_registers(i8080emu *emu) {
 		emu->i8080.H,  emu->i8080.L,
 		emu->i8080.SP,
 		emu->i8080.PC,
-		i8080_get_flag(&emu->i8080, FLAG_S),
-		i8080_get_flag(&emu->i8080, FLAG_Z),
-		i8080_get_flag(&emu->i8080, FLAG_A),
-		i8080_get_flag(&emu->i8080, FLAG_P),
-		i8080_get_flag(&emu->i8080, FLAG_C)
+		i8080emu_get_flag(emu, FLAG_S),
+		i8080emu_get_flag(emu, FLAG_Z),
+		i8080emu_get_flag(emu, FLAG_A),
+		i8080emu_get_flag(emu, FLAG_P),
+		i8080emu_get_flag(emu, FLAG_C)
 	);
 }

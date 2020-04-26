@@ -1,34 +1,28 @@
 #include "i8080emu.h"
 
-/* Set the value of the needed flags after and, xor, or. */
-void set_logical_flags(i8080 *i8080) {
-	i8080_set_flag(i8080, FLAG_C, false);			// Carry Flag is zeroed.
-	i8080_set_flag(i8080, FLAG_Z, i8080->A == 0x00);	// Zero Flag.
-	i8080_set_flag(i8080, FLAG_S, i8080->A & 0x80);		// Sign Flag.
-	i8080_set_flag(i8080, FLAG_P, parity_table[i8080->A]);	// Parity Flag.
+/* Set the value of the needed flags after xor, or. */
+void set_logical_flags(i8080emu *emu) {
+	i8080emu_set_flag(emu, FLAG_C, false);
+	i8080emu_set_flag(emu, FLAG_A, false);
+	set_zsp(emu, emu->i8080.A);
 }
 
 /* Set the value of the needed flags after cmp. */
-void set_logical_cmp_flags(i8080 *i8080, uint8_t value) {
-	// 8080 manual says this instruction works as if value was subtracted from the accumulator,
-	// and the flags set according to the result.
-	uint8_t result = i8080->A - value;
-
-	i8080_set_flag(i8080, FLAG_Z, i8080->A == value);		// Zero Flag.
-	i8080_set_flag(i8080, FLAG_S, result & 0x80);			// Sign Flag.
-	i8080_set_flag(i8080, FLAG_P, parity_table[result]);	// Parity Flag.
-
-	// Carry has it's value reversed if the numbers differ in sign.
-	i8080_set_flag(i8080, FLAG_C, i8080->A < value);	// Carry Flag.
-	// TODO: I think this could be wrong, I should be aware so I can check later!
-	i8080_set_flag(i8080, FLAG_A, ((i8080->A ^ value) & 0x10) != ((i8080->A - value) & 0x10));	// Auxiliary Carry Flag.
+void set_logical_cmp_flags(i8080emu *emu, uint8_t value) {
+	const uint16_t result = emu->i8080.A - value;
+	i8080emu_set_flag(emu, FLAG_C, result >> 8);
+	i8080emu_set_flag(emu, FLAG_A, ~(emu->i8080.A ^ result ^ value) & 0x10);
+	set_zsp(emu, result & 0xff);
 }
 
 /* Logical And Instructions */
 #define ANA_INSTR(r,R)\
 	INSTR(ana_##r) {\
-		emu->i8080.A &= emu->i8080.R;\
-		set_logical_flags(&emu->i8080);\
+		uint8_t result = emu->i8080.A & emu->i8080.R;\
+		i8080emu_set_flag(emu, FLAG_C, false);\
+		i8080emu_set_flag(emu, FLAG_A, ((emu->i8080.A | emu->i8080.R) & 0x08) != 0);\
+		set_zsp(emu, result);\
+		emu->i8080.A = result;\
 		++emu->i8080.PC;\
 		return 4;\
 	}
@@ -43,20 +37,26 @@ ANA_INSTR(l,L)
 ANA_INSTR(a,A)
 
 INSTR(ana_m) {
-	emu->i8080.A &= get_byte_hl(emu);
-	set_logical_flags(&emu->i8080);
+	uint8_t byte = get_byte_hl(emu);
+	uint8_t result = emu->i8080.A & byte;
+	i8080emu_set_flag(emu, FLAG_C, false);
+	i8080emu_set_flag(emu, FLAG_A, ((emu->i8080.A | byte) & 0x08) != 0);
+	set_zsp(emu, result);
 
+	emu->i8080.A = result;
 	++emu->i8080.PC;
-
 	return 7;
 }
 
 INSTR(ani) {
-	emu->i8080.A &= get_byte_from_instruction(emu);
-	set_logical_flags(&emu->i8080);
+	uint8_t byte = get_byte_from_instruction(emu);
+	uint8_t result = emu->i8080.A & byte;
+	i8080emu_set_flag(emu, FLAG_C, false);
+	i8080emu_set_flag(emu, FLAG_A, ((emu->i8080.A | byte) & 0x08) != 0);
+	set_zsp(emu, result);
 
+	emu->i8080.A = result;
 	emu->i8080.PC += 2;
-
 	return 7;
 }
 
@@ -64,7 +64,7 @@ INSTR(ani) {
 #define XRA_INSTR(r,R)\
 	INSTR(xra_##r) {\
 		emu->i8080.A ^= emu->i8080.R;\
-		set_logical_flags(&emu->i8080);\
+		set_logical_flags(emu);\
 		++emu->i8080.PC;\
 		return 4;\
 	}
@@ -79,7 +79,7 @@ XRA_INSTR(a,A)
 
 INSTR(xra_m) {
 	emu->i8080.A ^= get_byte_hl(emu);
-	set_logical_flags(&emu->i8080);
+	set_logical_flags(emu);
 
 	++emu->i8080.PC;
 
@@ -88,7 +88,7 @@ INSTR(xra_m) {
 
 INSTR(xri) {
 	emu->i8080.A ^= get_byte_from_instruction(emu);
-	set_logical_flags(&emu->i8080);
+	set_logical_flags(emu);
 
 	emu->i8080.PC += 2;
 
@@ -99,7 +99,7 @@ INSTR(xri) {
 #define ORA_INSTR(r,R)\
 	INSTR(ora_##r) {\
 		emu->i8080.A |= emu->i8080.R;\
-		set_logical_flags(&emu->i8080);\
+		set_logical_flags(emu);\
 		++emu->i8080.PC;\
 		return 4;\
 	}
@@ -114,7 +114,7 @@ ORA_INSTR(a,A)
 
 INSTR(ora_m) {
 	emu->i8080.A |= get_byte_hl(emu);
-	set_logical_flags(&emu->i8080);
+	set_logical_flags(emu);
 	
 	++emu->i8080.PC;
 
@@ -123,7 +123,7 @@ INSTR(ora_m) {
 
 INSTR(ori) {
 	emu->i8080.A |= get_byte_from_instruction(emu);
-	set_logical_flags(&emu->i8080);
+	set_logical_flags(emu);
 
 	emu->i8080.PC += 2;
 
@@ -133,7 +133,7 @@ INSTR(ori) {
 /* Logical Compare Instructions */
 #define CMP_INSTR(r,R)\
 	INSTR(cmp_##r) {\
-		set_logical_cmp_flags(&emu->i8080, emu->i8080.R);\
+		set_logical_cmp_flags(emu, emu->i8080.R);\
 		++emu->i8080.PC;\
 		return 4;\
 	}
@@ -147,7 +147,7 @@ CMP_INSTR(l,L)
 CMP_INSTR(a,A)
 
 INSTR(cmp_m) {
-	set_logical_cmp_flags(&emu->i8080, get_byte_hl(emu));
+	set_logical_cmp_flags(emu, get_byte_hl(emu));
 	
 	++emu->i8080.PC;
 
@@ -155,7 +155,7 @@ INSTR(cmp_m) {
 }
 
 INSTR(cpi) {
-	set_logical_cmp_flags(&emu->i8080, get_byte_from_instruction(emu));
+	set_logical_cmp_flags(emu, get_byte_from_instruction(emu));
 	
 	emu->i8080.PC += 2;
 

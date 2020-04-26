@@ -6,10 +6,10 @@
 #include <stdbool.h>
 
 #define HB(x) (x & 0xff00) >> 8 // HIGH_BYTE
-#define LB(x) (x & 0x00ff)		// LOW_BYTE 
-#define LN(x) (x & 0xf)			// LOW_NIBBLE
+#define LB(x) (x & 0x00ff)	// LOW_BYTE 
+#define LN(x) (x & 0xf)		// LOW_NIBBLE
 #define HN(x) (x & 0xf0) >> 4	// HIGH_NIBBLE
-#define C2(x) (~x + 1)			// Two's complement
+#define C2(x) (~x + 1)		// Two's complement
 
 /* Bits 4, 3 and 1 (starting from 0) don't have use. And
  * have default values. The Flag Register should aways be:
@@ -51,8 +51,8 @@ void i8080emu_load_program_into_memory(i8080emu *emu, const char *filename, uint
 void i8080emu_destroy(i8080emu *emu);
 
 /* Emulation Stuff. */
-bool i8080_get_flag(const i8080 *i8080, Flags flag);
-void i8080_set_flag(i8080 *i8080, Flags flag, bool value);
+bool i8080emu_get_flag(const i8080emu *emu, Flags flag);
+void i8080emu_set_flag(i8080emu *emu, Flags flag, bool value);
 
 unsigned i8080emu_run_cycles(i8080emu *emu, unsigned cycles);
 
@@ -364,6 +364,9 @@ void i8080emu_write_byte_memory(i8080emu *emu, uint16_t addr, uint8_t byte);
 void i8080emu_write_word_memory(i8080emu *emu, uint16_t addr, uint16_t word);
 uint8_t i8080emu_read_byte_memory(const i8080emu *emu, uint16_t addr);
 uint16_t i8080emu_read_word_memory(const i8080emu *emu, uint16_t addr);
+
+void set_zsp(i8080emu *emu, uint8_t val);
+
 /* Debug Stuff. */
 void i8080emu_print_registers(i8080emu  *emu);
 

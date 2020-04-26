@@ -1,7 +1,7 @@
 # Horrible makefile, pardon me! Someday I'll take my time to learn this thing...
 tester:
 	gcc -c cpu/*.c -Wall -O3
-	g++ -c tester.cc terminal/*.cc -Wall -O3
+	g++ -c tester.cc terminal/*.cc -O3
 	g++ -o tester *.o -lsfml-graphics -lsfml-window -lsfml-system -O3
 dtester:
 	gcc -c cpu/*.c disassembler/*.c -Wall -D WITH_DISASSEMBLER

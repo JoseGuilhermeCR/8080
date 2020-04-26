@@ -10,7 +10,7 @@ void return_from_subroutine(i8080emu *emu) {
 uint8_t return_with_condition(i8080emu *emu, Flags flag, bool value) {
 	uint8_t cycles = 5;
 
-	if (i8080_get_flag(&emu->i8080, flag) == value) {
+	if (i8080emu_get_flag(emu, flag) == value) {
 		return_from_subroutine(emu);
 		cycles = 11;
 	} else {
@@ -41,7 +41,7 @@ void call_addr(i8080emu *emu) {
 uint8_t call_addr_with_condition(i8080emu *emu, Flags flag, bool value) {
 	uint8_t cycles = 11;
 
-	if (i8080_get_flag(&emu->i8080, flag) == value) {
+	if (i8080emu_get_flag(emu, flag) == value) {
 		call_addr(emu);
 		cycles = 17;
 	} else {
@@ -56,7 +56,7 @@ void jump(i8080emu *emu) {
 }
 
 uint8_t jump_with_condition(i8080emu *emu, Flags flag, bool value) {
-	if (i8080_get_flag(&emu->i8080, flag) == value)
+	if (i8080emu_get_flag(emu, flag) == value)
 		jump(emu);
 	else
 		emu->i8080.PC += 3;
