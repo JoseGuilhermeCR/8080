@@ -31,7 +31,7 @@ const uint8_t (*instruction_table[0x100]) (i8080emu *const emu) = {
 	nop, dad_b, ldax_b, dcx_b, inr_c, dcr_c, mvi_c, rrc,
 	nop, lxi_d, stax_d, inx_d, inr_d, dcr_d, mvi_d, ral,
 	nop, dad_d, ldax_d, dcx_d, inr_e, dcr_e, mvi_e, rar,
-	nop, lxi_h, shld, inx_h, inr_h, dcr_h, mvi_h, daa /* DAA */,
+	nop, lxi_h, shld, inx_h, inr_h, dcr_h, mvi_h, daa,
 	nop, dad_h, lhld, dcx_h, inr_l, dcr_l, mvi_l, cma,
 	nop, lxi_sp, sta, inx_sp, inr_m, dcr_m, mvi_m, stc,
 	nop, dad_sp, lda, dcx_sp, inr_a, dcr_a, mvi_a, cmc,
@@ -58,7 +58,7 @@ const uint8_t (*instruction_table[0x100]) (i8080emu *const emu) = {
 	rpo, pop_h, jpo, xthl, cpo, push_h, ani, rst_4,
 	rpe, pchl, jpe, xchg, cpe, nop, xri, rst_5,
 	rp, pop_psw, jp, di, cp, push_psw, ori, rst_6,
-	rm, sphl, jm, di, cm, nop, cpi, rst_7
+	rm, sphl, jm, ei, cm, nop, cpi, rst_7
 };
 
 // Setup functions

@@ -11,12 +11,10 @@ extern "C" {
 void make_test(const std::string &filename, bool step_by_step/*, Terminal &term*/);
 
 int main() {
-	// It's stuck on this test. After changes in arithmetic instructions
-
 	//Terminal terminal;
 
-//	make_test("tests/MINE.COM", false);
-	make_test("cpu/tests/TEST.COM", true/*, terminal*/);
+	make_test("cpu/tests/MINE.COM", true);
+	make_test("cpu/tests/TEST.COM", false/*, terminal*/);
 	make_test("cpu/tests/8080PRE.COM", false/*, terminal*/);
 	make_test("cpu/tests/8080EXM.COM", false/*, terminal*/);
 	make_test("cpu/tests/CPUTEST.COM", false/*, terminal*/);
@@ -33,6 +31,9 @@ void make_test(const std::string &filename, bool step_by_step/*, Terminal &term*
 	// Put a return instruction where the test will make a call.
 	i8080emu_write_byte_memory(emu, 0x0005, 0xC9);
 
+	long done_cycles = 0;
+	long done_instructions = 0;
+
 	uint16_t pc_before;
 	emu->i8080.PC = 0x0100;
 	while (true/*!term.closed()*/) {
@@ -45,7 +46,8 @@ void make_test(const std::string &filename, bool step_by_step/*, Terminal &term*
 		#endif
 
 		pc_before = emu->i8080.PC;
-		i8080emu_run_cycles(emu, 1);
+		done_cycles += i8080emu_run_cycles(emu, 1);
+		++done_instructions;
 
 		#ifdef WITH_DISASSEMBLER
 		std::cout << "Registers after execution:\n";
@@ -72,6 +74,7 @@ void make_test(const std::string &filename, bool step_by_step/*, Terminal &term*
 
 		if (emu->i8080.PC == 0) {
 			std::cout << "\nGot to 0000, PC before = " << std::hex << std::uppercase << pc_before << "H " << std::dec << pc_before;
+			std::cout << "\nDone instructions: " << done_instructions << ". Done cycles: " << done_cycles;
 			break;
 		}
 	}
