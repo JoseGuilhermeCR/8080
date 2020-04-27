@@ -488,7 +488,18 @@ INSTR(cm) {
 POP_INSTR(b,B,C)
 POP_INSTR(d,D,E)
 POP_INSTR(h,H,L)
-POP_INSTR(psw,A,F)
+
+INSTR(pop_psw) {
+	emu->i8080.F = i8080emu_read_byte_memory(emu, emu->i8080.SP);
+	emu->i8080.A = i8080emu_read_byte_memory(emu, emu->i8080.SP + 1);
+
+	// F must not have the unused bits changed! They need to remain with the correct values.
+	emu->i8080.F = (emu->i8080.F & 0xD7) | 0x02;
+
+	emu->i8080.SP += 2;
+	++emu->i8080.PC;
+	return 10;
+}
 
 // Pushes value from register pair RR1 into stack.
 #define PUSH_INSTR(r,R,R1)\
