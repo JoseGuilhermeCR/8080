@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Although the 8080 could receive any instruction via an interrupt.
+// Here, only 1 byte instructions would work. I think this should be fine since apparently the most used
+// instructions for interrupts were the RST 0 through 7.
+
 // 1 for numbers with even number of 1 bits and 0 for numbers with odd number of 1 bits.
 const uint8_t parity_table[0x100] = {
 	1, 0, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 
@@ -53,8 +57,8 @@ const uint8_t (*instruction_table[0x100]) (i8080emu *const emu) = {
 	cmp_b, cmp_c, cmp_d, cmp_e, cmp_h, cmp_l, cmp_m, cmp_a,
 	rnz, pop_b, jnz, jmp, cnz, push_b, adi, rst_0,
 	rz, ret, jz, nop, cz, call, aci, rst_1,
-	rnc, pop_d, jnc, NULL /* OUT */, cnc, push_d, sui, rst_2,
-	rc, nop, jc, NULL /* IN */, cc, nop, sbi, rst_3,
+	rnc, pop_d, jnc, out, cnc, push_d, sui, rst_2,
+	rc, nop, jc, in, cc, nop, sbi, rst_3,
 	rpo, pop_h, jpo, xthl, cpo, push_h, ani, rst_4,
 	rpe, pchl, jpe, xchg, cpe, nop, xri, rst_5,
 	rp, pop_psw, jp, di, cp, push_psw, ori, rst_6,
@@ -81,9 +85,15 @@ i8080emu *i8080emu_create() {
 
 	emu->i8080.INTE = 1;	// Interrupt system starts activated.
 
+	memset(emu->io_ports, 0x00, 0x100);
+
 	// Allocate memory, for now 65536 bytes (max possible).
 	emu->memory = malloc(sizeof(uint8_t) * 0x10000);
 	memset(emu->memory, 0x00, 0x10000);
+
+	emu->is_halted = false;
+	emu->was_interrupted = false;
+	emu->inte_instruction = 0x00;
 
 	return emu;
 }
@@ -120,24 +130,34 @@ bool i8080emu_get_flag(const i8080emu *const emu, Flags flag) {
 }
 
 void i8080emu_set_flag(i8080emu *const emu, Flags flag, bool value) {
-	if (value)
+	if (value) {
 		emu->i8080.F |= flag;
-	else
+	} else {
 		emu->i8080.F &= ~flag;
+	}
 
 	emu->i8080.F = (emu->i8080.F & 0xD7) | 0x02;
 }
 
-unsigned i8080emu_run_cycles(i8080emu *const emu, unsigned cycles) {
-	unsigned done_cycles = 0;
+void i8080emu_interrupt(i8080emu *const emu, uint8_t inte_instruction) {
+	// Only accepts interrupt, if the system is enabled.
+	if (emu->i8080.INTE == 0x1) {
+		emu->inte_instruction = inte_instruction;
+		emu->was_interrupted = true;
+	}
+}
 
-	while (done_cycles < cycles) {
-		if (instruction_table[emu->memory[emu->i8080.PC]]) {
-			done_cycles += (*instruction_table[emu->memory[emu->i8080.PC]])(emu);
-		} else {
-			//printf("Instruction %02x not implemented yet.\n", emu->memory[emu->i8080.PC]);
-			++emu->i8080.PC;
-		}
+uint8_t i8080emu_step(i8080emu *const emu) {
+	uint8_t done_cycles = 0;
+
+	if (emu->was_interrupted && emu->i8080.INTE == 0x1) {
+		emu->was_interrupted = false;
+		emu->i8080.INTE = 0x0;
+		emu->is_halted = false;
+
+		done_cycles = instruction_table[emu->inte_instruction](emu);
+	} else if (!emu->is_halted) {
+		done_cycles = instruction_table[emu->memory[emu->i8080.PC]](emu);
 	}
 
 	return done_cycles;
@@ -181,7 +201,7 @@ void set_zsp(i8080emu *const emu, uint8_t val) {
 }
 
 // Debug Stuff
-void i8080emu_print_registers(const i8080emu *const emu) {
+void i8080emu_print_debug_info(const i8080emu *const emu) {
 	printf(
 		"A: %02x F: %02x\n"
 		"B: %02x C: %02x\n"
@@ -189,6 +209,8 @@ void i8080emu_print_registers(const i8080emu *const emu) {
 		"H: %02x L: %02x\n"
 		"SP: %04x\n"
 		"PC: %04x\n"
+		"INTE: %u\n"
+		"HALTED: %u\n"
 		"S: %u Z: %u A: %u P: %u C: %u\n",
 		emu->i8080.A,  emu->i8080.F,
 		emu->i8080.B,  emu->i8080.C,
@@ -196,6 +218,8 @@ void i8080emu_print_registers(const i8080emu *const emu) {
 		emu->i8080.H,  emu->i8080.L,
 		emu->i8080.SP,
 		emu->i8080.PC,
+		emu->i8080.INTE,
+		emu->is_halted,
 		i8080emu_get_flag(emu, FLAG_S),
 		i8080emu_get_flag(emu, FLAG_Z),
 		i8080emu_get_flag(emu, FLAG_A),
@@ -518,8 +542,6 @@ PUSH_INSTR(psw,A,F)
 
 // Interrupt specific calls
 void call_interrupt_subroutine(i8080emu *const emu, uint8_t number) {
-	// Advance PC to next instruction before pushing into the stack.
-	++emu->i8080.PC;
 	save_pc_in_stack(emu);
 	
 	// Calls the needed interrupt subroutine according to the rst instruction number.
@@ -1029,9 +1051,9 @@ INSTR(nop) {
 }
 
 INSTR(hlt) {
-	// NOP; PC = PC - 1
-	--emu->i8080.PC;
+	emu->is_halted = true;
 
+	++emu->i8080.PC;
 	return 7;
 }
 
@@ -1281,4 +1303,20 @@ INSTR(sphl) {
 	++emu->i8080.PC;
 
 	return 5;
+}
+
+INSTR(out) {
+	// Write the accumulator to the io_port indicated by the byte in instruction.
+	emu->io_ports[get_byte_from_instruction(emu)] = emu->i8080.A;
+
+	emu->i8080.PC += 2;
+	return 10;
+}
+
+INSTR(in) {
+	// Read from io_port of device indicated by byte in instruction to the accumulator.
+	emu->i8080.A = emu->io_ports[get_byte_from_instruction(emu)];
+
+	emu->i8080.PC += 2;
+	return 10;
 }

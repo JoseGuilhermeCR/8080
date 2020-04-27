@@ -38,7 +38,12 @@ typedef struct {
 
 typedef struct {
 	i8080 i8080;
+	uint8_t io_ports[0x100]; // 256 IO Ports.
 	uint8_t *memory; // The maximum size of memory is 65536 bytes.
+
+	bool is_halted;
+	bool was_interrupted;
+	uint8_t inte_instruction;
 } i8080emu;
 
 extern const uint8_t parity_table[0x100];
@@ -52,8 +57,9 @@ void i8080emu_destroy(i8080emu *emu);
 /* Emulation Stuff. */
 bool i8080emu_get_flag(const i8080emu *const emu, Flags flag);
 void i8080emu_set_flag(i8080emu *const emu, Flags flag, bool value);
+void i8080emu_interrupt(i8080emu *const emu, uint8_t inte_instruction);
 
-unsigned i8080emu_run_cycles(i8080emu *const emu, unsigned cycles);
+uint8_t i8080emu_step(i8080emu *const emu);
 
 /* Instructions */
 /* Macro for declaring an instruction */
@@ -353,6 +359,10 @@ INSTR(hlt);
 INSTR(ei);
 INSTR(di);
 
+/* IO Instructions */
+INSTR(out);
+INSTR(in);
+
 /* Help */
 uint8_t get_byte_hl(const i8080emu *const emu);
 uint16_t get_word_from_instruction(const i8080emu *const emu);
@@ -367,6 +377,6 @@ uint16_t i8080emu_read_word_memory(const i8080emu *const emu, uint16_t addr);
 void set_zsp(i8080emu *const emu, uint8_t val);
 
 /* Debug Stuff. */
-void i8080emu_print_registers(const i8080emu *const emu);
+void i8080emu_print_debug_info(const i8080emu *const emu);
 
 #endif
