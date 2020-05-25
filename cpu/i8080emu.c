@@ -99,7 +99,7 @@ i8080emu *i8080emu_create() {
 }
 
 // We may want to choose where in memory the program will be loaded.
-void i8080emu_load_program_into_memory(i8080emu *const emu, const char *filename, uint16_t offset, bool print_info) {
+bool i8080emu_load_program_into_memory(i8080emu *const emu, const char *filename, uint16_t offset, bool print_info) {
 	FILE *file = fopen(filename, "rb");
 
 	if (file) {
@@ -113,8 +113,11 @@ void i8080emu_load_program_into_memory(i8080emu *const emu, const char *filename
 
 		if (print_info) 
 			printf("Loaded file %s with size %li and offset %u.\n",  filename, size, offset);
+
+		return true;
 	} else {
 		fprintf(stderr, "Couldn't load file %s.\n", filename);
+		return false;
 	}
 }
 

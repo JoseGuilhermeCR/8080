@@ -2,9 +2,18 @@
 #include "disassembler/disassembler.h"
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
-void make_test(const char *filename, bool debug, bool step_by_step);
+typedef struct {
+	uint16_t start_pc;
+	uint16_t memory_offset;
+	bool debug;
+	bool step_by_step;
+} run_parameters;
+
+void run(const char *filename, const run_parameters *parameters);
+void make_test(const char *filename, const run_parameters *parameters);
 void interrupt_test();
 void step(i8080emu *const emu);
 
@@ -12,32 +21,94 @@ int main(int argc, char **argv) {
 	if (argc <= 1) {
 		printf(
 			"How to execute:\n"
-			"tester cputests (if you want to debug or debug step by step, please change the function call for the test you want)\n"
-			"tester interrupts\n"
+			"i8080 file.hex (extras: --start_pc --memory_offset --debug --step_by_step)\n"
+			"i8080 cpu_tests (extras: --debug --step_by_step(depends on debug))\n"
+			"i8080 interrupt_test\n"
 		);
 		return 1;
 	} else {
-		if (strncmp(argv[1], "cputests", 8) == 0) {
-			make_test("cpu/tests/TEST.COM", false, false);
-			make_test("cpu/tests/8080PRE.COM", false, false);
-			make_test("cpu/tests/8080EXM.COM", false, false);
-			make_test("cpu/tests/CPUTEST.COM", false, false);
-		} else if (strncmp(argv[1], "interrupts", 10) == 0) {
+		run_parameters parameters;
+		parameters.start_pc = 0x0100;
+		parameters.memory_offset = 0x0100;
+
+		for (int i = 2; i < argc; ++i) {
+			if (strncmp(argv[i], "--debug", 7) == 0) {
+				parameters.debug = true;
+			} else if (strncmp(argv[i], "--step_by_step", 14) == 0) {
+				parameters.step_by_step = true;
+			} else if (strncmp(argv[i], "--start_pc", 10) == 0) {
+				if (i + 1 < argc && argv[i + 1][0] != '-') {
+					parameters.start_pc = atoi(argv[i + 1]);
+				}
+			} else if (strncmp(argv[i], "--memory_offset", 15) == 0) {
+				if (i + 1 < argc && argv[i + 1][0] != '-') {
+					parameters.memory_offset = atoi(argv[i + 1]);
+				}
+			}
+		}
+
+		printf("Starting with: start_pc = 0x%02X memory_offset = 0x%02X debug = %i step_by_step = %i\n", parameters.start_pc, parameters.memory_offset, parameters.debug,
+														 parameters.step_by_step);
+	
+		if (strncmp(argv[1], "cpu_tests", 9) == 0) {
+			make_test("cpu/tests/TEST.COM", &parameters);
+			make_test("cpu/tests/8080PRE.COM", &parameters);
+			make_test("cpu/tests/8080EXM.COM", &parameters);
+			make_test("cpu/tests/CPUTEST.COM", &parameters);
+		} else if (strncmp(argv[1], "interrupt_test", 14) == 0) {
 			interrupt_test();
 		} else {
-			printf("Unrecognized parameter\n");
-			return 1;
+			run(argv[1], &parameters);
 		}
 	}
 	
 	return 0;
 }
 
-void make_test(const char *filename, bool debug, bool step_by_step) {
+void run(const char *filename, const run_parameters *parameters) {
+	i8080emu *emu = i8080emu_create();
+
+	if (!i8080emu_load_program_into_memory(emu, filename, parameters->memory_offset, parameters->debug)) {
+		i8080emu_destroy(emu);
+		return;
+	}
+
+	unsigned long done_cycles = 0;
+	unsigned long done_instructions = 0;
+
+	emu->i8080.PC = parameters->start_pc;
+
+	while (true) {
+		if (parameters->debug) {
+			if (parameters->step_by_step) {
+				printf("\nPress enter to execute: ");
+			}
+			disassemble_8080(emu->memory, emu->i8080.PC);
+			if (parameters->step_by_step) {
+				getchar();
+			}
+		}
+
+		done_cycles += i8080emu_step(emu);
+		if (!emu->is_halted) {
+			++done_instructions;
+		}
+
+		if (parameters->debug) {
+			printf("Registers after execution:\n");
+			i8080emu_print_debug_info(emu);
+			printf("Executed cycles: %lu Instructions executed: %lu\n", done_cycles, done_instructions);
+		}
+	}
+
+	i8080emu_destroy(emu);
+}
+
+void make_test(const char *filename, const run_parameters *parameters) {
 	printf("\n=====================================================\n");
 
 	i8080emu *emu = i8080emu_create();
-	i8080emu_load_program_into_memory(emu, filename, 0x100, true);
+	i8080emu_load_program_into_memory(emu, filename, parameters->memory_offset, parameters->debug);
 
 	// Put a return instruction where the test will make a call.
 	i8080emu_write_byte_memory(emu, 0x0005, 0xC9);
@@ -46,14 +117,14 @@ void make_test(const char *filename, bool debug, bool step_by_step) {
 	unsigned long done_instructions = 0;
 
 	uint16_t pc_before;
-	emu->i8080.PC = 0x0100;
+	emu->i8080.PC = parameters->start_pc;
 	while (true) {
-		if (debug) {
-			if (step_by_step) {
+		if (parameters->debug) {
+			if (parameters->step_by_step) {
 				printf("\nPress enter to execute: ");
 			}
 			disassemble_8080(emu->memory, emu->i8080.PC);
-			if (step_by_step) {
+			if (parameters->step_by_step) {
 				getchar();
 			}
 		}
@@ -62,7 +133,7 @@ void make_test(const char *filename, bool debug, bool step_by_step) {
 		done_cycles += i8080emu_step(emu);
 		++done_instructions;
 
-		if (debug) {
+		if (parameters->debug) {
 			printf("Registers after execution:\n");
 			i8080emu_print_debug_info(emu);
 		}
