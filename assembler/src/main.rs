@@ -54,7 +54,7 @@ fn assemble(code: String, mnemonic_type: HashMap<&str, InstructionType>, instruc
             '.' => {
                 match process_assembler_command(line) {
                     AssemblerCommands::None => (),
-                    AssemblerCommands::Org(offset) => {
+                    /*AssemblerCommands::Org(offset) => {
                         data.memory_offset = offset;
                         // If this .org was preceded by any instruction, we should 
                         // fill to it's offset with nops.
@@ -64,7 +64,8 @@ fn assemble(code: String, mnemonic_type: HashMap<&str, InstructionType>, instruc
                                 data.machine_code.push(0x00);
                             }
                         }
-                    }
+                    }*/
+                    _ => (),
                 }
             },
             ';' => (),
@@ -72,7 +73,7 @@ fn assemble(code: String, mnemonic_type: HashMap<&str, InstructionType>, instruc
         }
     }
 
-    println!("{:?}", data.machine_code);
+    println!("{:X?}", data.machine_code);
     for i in &data.label_address {
         println!("Label: {} Address: {}", i.0, i.1);
     }
@@ -85,7 +86,7 @@ fn process_assembly_line(line: &str, data: &mut AssemblerData, mnemonic_type: &H
         None => line.trim(),
         Some(index) => {
             // Add label to the map.
-            data.label_address.insert(line[..index].to_string(), data.machine_code.len() as u16 + data.memory_offset);
+            data.label_address.insert(line[..index].to_string(), data.machine_code.len() as u16);
             // Line without label
             line[index+1..].trim()
         },
@@ -124,7 +125,7 @@ fn process_assembly_line(line: &str, data: &mut AssemblerData, mnemonic_type: &H
                     None => {
                         // Check if label is already in the map:
                         match data.label_address.get(operand) {
-                            Some(word) => *word + data.memory_offset,
+                            Some(word) => *word,
                             None => {
                                 println!("FutureLabelsNotImplementedYet");
                                 0x0000
@@ -152,7 +153,30 @@ fn process_assembly_line(line: &str, data: &mut AssemblerData, mnemonic_type: &H
                 data.machine_code.push(byte);
             },
             InstructionType::Word => {
+                // FIXME:
+                let mut iter = line.split_whitespace();
 
+                let instr = iter.next().unwrap().trim();
+                let operand = iter.next().unwrap().trim();
+
+                let word = match word_from_line(operand) {
+                    Some(word) => word,
+                    None => {
+                        // Check if label is already in the map:
+                        match data.label_address.get(operand) {
+                            Some(word) => *word,
+                            None => {
+                                println!("FutureLabelsNotImplementedYet");
+                                0x0000
+                            }
+                        }
+                    },
+                }.to_le_bytes();
+
+                let instr = instruction_code.get(instr).unwrap();
+                data.machine_code.push(instr.code);
+                data.machine_code.push(word[0]);
+                data.machine_code.push(word[1]);
             },
             InstructionType::Numeral => {
                 let instr = instruction_code.get(line.split_whitespace().collect::<String>().as_str()).unwrap();
@@ -201,7 +225,7 @@ fn byte_from_line(number: &str) -> u8 {
 }
 
 fn main() {
-    let assembly = fs::read_to_string("interrupt_test.asm").unwrap();
+    let assembly = fs::read_to_string("another_test.asm").unwrap();
 
     let machine_code = assemble(assembly, create_mnemonic_type_map(), create_instruction_code_map()).machine_code;
 
