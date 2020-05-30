@@ -1,9 +1,17 @@
 use std::fs;
 use std::collections::HashMap;
 
+// TODO: Hopefully not panic everytime I make a mess out of the .asm.
+
+// FIXME: Need to remove comments to prevent errors while parsing.
+//        Fix ASCIIZ and put the assembler processing in it's proper
+//        function (wondering why didn't I do that in the first place)
+
 enum AssemblerCommands {
     None,
-    Org(u16),   
+    Org(u16),
+    Db(u8),
+    Asciiz(String),
 }
 
 struct MissingLabel {
@@ -23,7 +31,7 @@ impl MissingLabel {
 struct AssemblerData {
     machine_code: Vec<u8>,
     label_address: HashMap<String, u16>,
-    memory_offset: u16,
+    origin_point: u16,
     missing_labels: Vec<MissingLabel>,
 }
 
@@ -32,7 +40,7 @@ impl AssemblerData {
         AssemblerData {
             machine_code: vec![],
             label_address: HashMap::new(),
-            memory_offset: 0,
+            origin_point: 0,
             missing_labels: vec![],
         }
     }
@@ -66,21 +74,23 @@ fn assemble(code: String, mnemonic_type: HashMap<&str, InstructionType>, instruc
     let mut data = AssemblerData::new();
 
     for line in code.lines() {
+        let line = process_label(line, &mut data);
         match line.trim().chars().next().unwrap_or(';') {
             '.' => {
                 match process_assembler_command(line) {
                     AssemblerCommands::None => (),
-                    /*AssemblerCommands::Org(offset) => {
-                        data.memory_offset = offset;
-                        // If this .org was preceded by any instruction, we should 
-                        // fill to it's offset with nops.
-                        if data.machine_code.len() != 0 {
-                            let diff = data.memory_offset as usize - data.machine_code.len();
-                            for i in 0..diff {
-                                data.machine_code.push(0x00);
-                            }
+                    AssemblerCommands::Org(origin) => {
+                        data.origin_point = origin;
+                    },
+                    AssemblerCommands::Db(byte) => {
+                        data.machine_code.push(byte);
+                    },
+                    AssemblerCommands::Asciiz(string) => {
+                        for c in string.bytes() {
+                            data.machine_code.push(c);
                         }
-                    }*/
+                        data.machine_code.push(0); // null terminator
+                    },
                     _ => (),
                 }
             },
@@ -94,7 +104,7 @@ fn assemble(code: String, mnemonic_type: HashMap<&str, InstructionType>, instruc
         match data.label_address.get(missing.label.as_str()) {
             None => (), // Should be an error.
             Some(address) => {
-                let address = address.to_le_bytes();
+                let address = (address + data.origin_point).to_le_bytes();
                 data.machine_code[missing.position as usize] = address[0];
                 data.machine_code[(missing.position + 1) as usize] = address[1];
             }
@@ -115,8 +125,6 @@ fn process_label<'a>(line: &'a str, data: &mut AssemblerData) -> &'a str {
 }
 
 fn process_assembly_line(line: &str, data: &mut AssemblerData, mnemonic_type: &HashMap<&str, InstructionType>, instruction_code: &HashMap<&str, Instruction>) {
-    let line = process_label(line, data);
-
     if !line.is_empty() {
         println!("{}", line);
         let mnemonic = line.split_whitespace().next().unwrap();
@@ -178,10 +186,9 @@ fn process_word_or_label(operand: &str, data: &mut AssemblerData) -> [u8; 2] {
         None => {
             // Check if label is already in the map:
             match data.label_address.get(operand) {
-                Some(word) => *word,
+                Some(word) => *word + data.origin_point,
                 None => {
                     data.missing_labels.push(MissingLabel::new(operand.to_string(), (data.machine_code.len() + 1) as u16));
-                    println!("Missing label: {} at address: {}", operand, data.machine_code.len() + 1);
                     0x0000
                 }
             }
@@ -208,6 +215,18 @@ fn process_assembler_command(command: &str) -> AssemblerCommands {
     match command[0] {
         ".org" => {
             AssemblerCommands::Org(word_from_line(command[1]).unwrap())
+        },
+        ".db" => {
+            AssemblerCommands::Db(byte_from_line(command[1]))
+        },
+        ".asciiz" => {
+            // FIXME:
+            let mut string = String::new();
+            for i in (1..command.len()) {
+                string.push_str(&command[i].to_string());
+            }
+            println!("{}", string);
+            AssemblerCommands::Asciiz(string)
         },
         _ => AssemblerCommands::None,
     }
@@ -241,12 +260,26 @@ fn byte_from_line(number: &str) -> u8 {
 }
 
 fn main() {
-    let assembly = fs::read_to_string("another_test.asm").unwrap();
+    let args: Vec<String> = std::env::args().collect();
 
-    let machine_code = assemble(assembly, create_mnemonic_type_map(), create_instruction_code_map()).machine_code;
-    println!("{:X?}", machine_code);
+    if args.len()  < 2 {
+        println!("How to use:
+                \rassembler file.asm --output file.hex");
+        std::process::exit(1);
+    } else {
+        let input = &args[1];
+        let mut output = "file.hex";
+        
+        for arg in args.iter().enumerate() {
+            if arg.1 == "--output" && arg.0 + 1 < args.len() {
+                output = &args[arg.0 + 1];
+            }
+        }
 
-    fs::write("test.hex", machine_code);
+        let assembly = fs::read_to_string(input).unwrap();
+        let machine_code = assemble(assembly, create_mnemonic_type_map(), create_instruction_code_map()).machine_code;
+        fs::write(output, machine_code);
+    }
 }
 
 fn create_mnemonic_type_map() -> HashMap<&'static str, InstructionType> {
@@ -536,7 +569,7 @@ fn create_instruction_code_map() -> HashMap<&'static str, Instruction> {
         ("rst1", Instruction::new(0xCF)),
         ("rnc", Instruction::new(0xD0)),
         ("popd", Instruction::new(0xD1)),
-        ("jnz", Instruction::new(0xD2)),
+        ("jnc", Instruction::new(0xD2)),
         ("out", Instruction::new(0xD3)),
         ("cnc", Instruction::new(0xD4)),
         ("pushd", Instruction::new(0xD5)),
