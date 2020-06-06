@@ -1,19 +1,20 @@
 ; text
-    .ORG 100H
+    .org 100h
     lxi sp, 0x07FF
     lxi h, msg
 loop:
-    mov a, m ; test a aa a aaa
-    out 1    
-    INX H
-    xra a    
-    cmp m    
-    jnz loop 
+    mov a, m ; Move from memory at HL to accumulator.
+    out 1    ; write accumulator to output port 1.
+    INX H    ; increment HL.
+    xra a    ; a = 0
+    cmp m    ; compare it with memory at HL
+    jnz loop ; if it's not zero, keep looping.
     mvi a, 0
     call funcao
     nop
 fim:
     jmp fim
+funcao:
     push psw
     adi 0xff
     mov b, a
@@ -22,7 +23,6 @@ fim:
     pop psw
     ret
 nop
-funcao:
 nop
 nop
 nop

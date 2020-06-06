@@ -77,11 +77,9 @@ fn assemble(code: String, mnemonic_type: HashMap<&str, InstructionType>, instruc
             let line = process_label(line, &mut data);
             
             if !line.is_empty() {
-                // Make line lowercase.
-                let line = line.to_ascii_lowercase();
                 match line.trim().chars().next().unwrap() {
-                    '.' => process_assembler_command(&line, &mut data),
-                    _ => process_assembly_line(&line, &mut data, &mnemonic_type, &instruction_code),
+                    '.' => process_assembler_command(line, &mut data),
+                    _ => process_assembly_line(line, &mut data, &mnemonic_type, &instruction_code),
                 }
             }
         }
@@ -118,6 +116,9 @@ fn process_label<'a>(line: &'a str, data: &mut AssemblerData) -> &'a str {
 
 fn process_assembly_line(line: &str, data: &mut AssemblerData, mnemonic_type: &HashMap<&str, InstructionType>, instruction_code: &HashMap<&str, Instruction>) {
     println!("{}", line);
+    // Converts line to lowercase.
+    let line = line.to_ascii_lowercase();
+    
     let mnemonic = line.split_whitespace().next().unwrap();
     
     match mnemonic_type.get(mnemonic).unwrap() {
