@@ -65,6 +65,8 @@ int main(int argc, char **argv) {
 	return 0;
 }
 
+#define SCREEN_OUTPUT 0
+
 void run(const char *filename, const run_parameters *parameters) {
 	i8080emu *emu = i8080emu_create();
 
@@ -75,7 +77,7 @@ void run(const char *filename, const run_parameters *parameters) {
 
 	unsigned long done_cycles = 0;
 	unsigned long done_instructions = 0;
-
+	
 	emu->i8080.PC = parameters->start_pc;
 
 	while (true) {
@@ -92,6 +94,12 @@ void run(const char *filename, const run_parameters *parameters) {
 		done_cycles += i8080emu_step(emu);
 		if (!emu->is_halted) {
 			++done_instructions;
+		}
+
+		if (emu->io_ports[SCREEN_OUTPUT] != 0) {
+			printf("%c", emu->io_ports[SCREEN_OUTPUT]);
+                        fflush(stdout);
+			emu->io_ports[SCREEN_OUTPUT] = 0;
 		}
 
 		if (parameters->debug) {
