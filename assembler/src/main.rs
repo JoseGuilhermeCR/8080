@@ -115,7 +115,6 @@ fn process_label<'a>(line: &'a str, data: &mut AssemblerData) -> &'a str {
 }
 
 fn process_assembly_line(line: &str, data: &mut AssemblerData, mnemonic_type: &HashMap<&str, InstructionType>, instruction_code: &HashMap<&str, Instruction>) {
-    println!("{}", line);
     // Converts line to lowercase.
     let line = line.to_ascii_lowercase();
     
@@ -219,6 +218,16 @@ fn process_assembler_command(line: &str, data: &mut AssemblerData) {
             match byte_from_line(split_command[1]) {
                 None => panic!("Error at line {}: {} / Invalid number: {}", data.current_line, line, split_command[1]),
                 Some(byte) => data.machine_code.push(byte)
+            }
+        },
+        ".dw" => {
+            match word_from_line(split_command[1]) {
+                None => panic!("Error at line {}: {} / Invalid number: {}", data.current_line, line, split_command[1]),
+                Some(word) => {
+                    let bytes = word.to_le_bytes();
+                    data.machine_code.push(bytes[0]);
+                    data.machine_code.push(bytes[1]);
+                },
             }
         },
         ".asciiz" => {
