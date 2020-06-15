@@ -1,7 +1,40 @@
 # 8080
-An attempt at making an Intel 8080 emulator.
+In this repository, you will find an Intel 8080 emulator, a disassembler and an assembler.
 
-All tests are now passing! Output from tester:
+## Emulator
+The emulator itself is in i8080.c. You can execute your own binary, execute the cpu tests
+or execute an interrupt test, more like a demo, I made.
+I decided to use IO PORT 0 to output characters. So, if you make your own program, by using "out 0"
+you can output a char to the screen.
+Example:
+```
+[joseguilhermecr@jose-desktop 8080]$ ./i8080 assembler/file.hex
+Starting with: start_pc = 0x100 memory_offset = 0x100 debug = 0 step_by_step = 0
+Hello There, 8080!
+```
+## Assembler and Disassembler
+The disassembler was made before the actual emulator, so I could get familiar with the instructions.
+Be aware that the disassembler can't differentiate instructions from data. So, a really weird
+sequence of instructions may actually be data that was interpreted as instructions.
+
+The assembler was made in Rust and is mostly functional. Assembler commands include:
+``.org`` to specify the origin of the program in memory.
+``.db`` to define a byte.
+``.dw`` to define a word.
+``.asciiz`` to define a null terminated string.
+
+You can assemble code by running:
+```assembler "file.asm" --output "optional_output_name.hex"```.
+If you don't specify the name of the output file, it will be called file.hex.
+
+## Tests
+
+CPU tests were made to be run within CP/M, an ancient OS, and, therefore, they made use of a BIOS.
+I put a return instruction at the address where the BIOS function should be and just checked whether 
+the tests had jumped to that address so I could print the information they wanted to show.
+That's how the tests are able to print to the screen.
+
+Output when running i8080 cpu_tests:
 ```
 =====================================================
 Loaded file cpu/tests/TEST.COM with size 1793 and offset 256.
