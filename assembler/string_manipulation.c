@@ -1,3 +1,5 @@
+#include <ctype.h>
+
 #include "string_manipulation.h"
 
 /* Given a line with only ONE quotation: 
@@ -36,4 +38,34 @@ char *extract_from_quotes(const char *line, size_t size)
 	}
 
 	return quotation;
+}
+
+/* Returns the next word it finds starting from pos.
+ * If pos is in the middle of a word, it will return the rest
+ * of the current word. If there's no word, will return NULL. */
+char *get_next_word(const char *line, size_t size, size_t pos)
+{
+	char *word = NULL;
+	size_t start = 0;
+	
+	while (pos < size && isspace(*(line + pos)))
+		++pos;
+
+	if (pos == size)
+		return NULL;
+
+	start = pos;
+
+	while (pos < size && !isspace(*(line + pos)))
+		++pos;
+
+	word = malloc(pos - start + 1);
+
+	if (word)
+	{
+		memcpy(word, line + start, pos - start);
+		word[pos - start] = '\0';
+	}
+
+	return word;
 }

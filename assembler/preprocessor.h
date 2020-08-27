@@ -15,4 +15,6 @@ bool preprocess(struct fbuffer *buffer);
 bool preprocess_include(struct fbuffer *buffer, const char *line,
 	       	size_t line_size, size_t pos);
 
+bool preprocess_define(struct fbuffer *buffer, const char *line,
+		size_t line_size, size_t pos);
 #endif

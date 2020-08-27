@@ -40,7 +40,7 @@ bool preprocess(struct fbuffer *buffer)
 		const size_t directive_pos = directive_beg - buffer->data;
 
 		/* Get the directive line and erase the line from the buffer. */
-		unsigned i = 0; /* Also represents the size of the line. */
+		size_t i = 0; /* Also represents the size of the line. */
 		while (i < DIRECTIVE_LINE_SIZE
 				&& directive_beg + i < buffer->data + buffer->size
 				&& directive_beg[i] != '\n')
@@ -57,6 +57,10 @@ bool preprocess(struct fbuffer *buffer)
 		{
 			success &= preprocess_include(buffer, directive_line, i, directive_pos);
 			file_included = true;
+		}
+		else if (strncmp("#define", directive_line, 7) == 0)
+		{
+			success &= preprocess_define(buffer, directive_line, i, directive_pos);
 		}
 
 		/* If a file was included, it's comments need
@@ -93,3 +97,45 @@ bool preprocess_include(struct fbuffer *buffer, const char *line,
 	return included;
 }
 
+/*
+ * #define     ERROR     0x01
+ * TODO: Should we allow empty defines?
+ * #define ERROR
+ * would define ERROR as an ""...
+ * */
+bool preprocess_define(struct fbuffer *buffer, const char *line,
+		size_t line_size, size_t pos)
+{
+	bool result = false;
+
+	char *string = NULL;
+	char *replacement = NULL;
+
+	/* Get next word starting from position 7, after #define. */
+	string = get_next_word(line, line_size, 7);
+
+	if (!string)
+		return result;
+
+	/* The replacement starts at the next non space char and only ends at the
+	 * end of the line. */
+	replacement = strstr(line, string) + strlen(string);
+	while (isspace(*replacement))
+		++replacement;
+
+	/* For now, don't allow empty defines. */
+	if (*replacement == '\0')
+	{
+		free(string);
+		return result;
+	}
+
+	/* Here we can make the define be valid to the whole file
+	 * or just to a portion (below the define). 
+	 * Just change pos with 0. */
+	result = fbuffer_replace(buffer, string, replacement, pos);
+
+	free(string);
+
+	return result;
+}

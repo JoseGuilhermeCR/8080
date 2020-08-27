@@ -53,6 +53,10 @@ void fbuffer_destroy(struct fbuffer *buffer)
 /* Includes another file in the buffer at given position and returns true.
  * If the file is not found or new buffer can't be allocated,
  * returns false.
+ * 
+ * TODO: The path to the file should be relative to the main .asm file, not
+ * to the assembler.
+ *
  * */
 bool fbuffer_include(struct fbuffer *buffer, const char *filename, size_t pos)
 {
@@ -81,7 +85,7 @@ bool fbuffer_include(struct fbuffer *buffer, const char *filename, size_t pos)
 	memcpy(new_data + pos + size, buffer->data + pos, buffer->size - pos);
 
 	new_data[buffer->size + size] = '\0';
-	
+
 	free(buffer->data);
 	buffer->data = new_data;
 	buffer->size += size + 1;
@@ -89,4 +93,61 @@ bool fbuffer_include(struct fbuffer *buffer, const char *filename, size_t pos)
 	fclose(file);
 
 	return true;
+}
+
+bool fbuffer_replace(struct fbuffer *buffer, const char *string, const char *replacement, size_t pos)
+{
+	/* Won't replace two things that are equal.
+	 * TODO: This can or can not be an error. */
+	if (strcmp(string, replacement) == 0)
+		return false;
+
+	const size_t str_len = strlen(string);
+	const size_t rep_len = strlen(replacement);
+	char *start = NULL;
+
+	/* No need to allocate more memory. */
+	if (rep_len <= str_len)
+	{
+		while ((start = strstr(buffer->data + pos, string)))
+		{
+			for (size_t i = 0; i < rep_len; ++i)
+				start[i] = replacement[i];
+
+			if (rep_len < str_len)
+			{
+				/* Fill the gap left by replacing a smaller string. */
+				for (size_t i = rep_len; i < str_len; ++i)
+					start[i] = ' ';
+
+				/* Put every character in the line to the position
+				 * they would have had if the replacement was actually
+				 * the original string. */
+				while (*(start + str_len) != '\n')
+				{
+					*(start + rep_len) = *(start + str_len);
+					*(start + str_len) = ' ';
+					++start;
+				}
+			}
+		}
+
+		return true;
+	}
+	else /* Needs more memory to fit the new characters. TODO*/
+	{
+		/* Count the amount of replacements we'll have to make. */
+		unsigned replacements = 0;
+		start = buffer->data + pos;
+		while (start + str_len < buffer->data + buffer->size
+				&& (start = (strstr(start, string))))
+		{
+			++replacements;
+			start += str_len;
+		}
+
+		printf("%i replacements need to be made!\n", replacements);
+
+		return false;
+	}
 }
