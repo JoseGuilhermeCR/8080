@@ -148,6 +148,41 @@ bool fbuffer_replace(struct fbuffer *buffer, const char *string, const char *rep
 
 		printf("%i replacements need to be made!\n", replacements);
 
-		return false;
+		/* Allocate enough memory to fit everything. */
+		const size_t new_size = buffer->size + (replacements * rep_len);
+		char *new_data = malloc(new_size + 1);
+
+		if (!new_data)
+			return false;
+
+		char *new_data_off = new_data;
+		char *last_start = buffer->data;
+
+		start = buffer->data + pos;
+
+		while (start + str_len < buffer->data + buffer->size
+				&& (start = strstr(start, string)))
+		{
+			/* Write everything up to the replacement. */
+			memcpy(new_data_off + (last_start - buffer->data), last_start, start - last_start);
+			/* Write the replacement. */
+			memcpy(new_data_off + (start - buffer->data), replacement, rep_len);
+
+			 /* Next time write to the position the replaced word ended. */
+			new_data_off += (rep_len - str_len);
+
+			start += str_len;
+			last_start = start;
+		}
+
+		/* Copy rest of buffer. */
+		memcpy(new_data_off + (last_start - buffer->data), last_start, buffer->size - (last_start - buffer->data));
+
+		new_data[new_size] = '\0';
+
+		free(buffer->data);
+		buffer->data = new_data;
+
+		return true;
 	}
 }
