@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-#include "error.h"
 #include "preprocessor.h"
 #include "file_buffer.h"
 

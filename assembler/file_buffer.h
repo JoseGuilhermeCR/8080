@@ -6,12 +6,12 @@
 
 /* File Buffer */
 struct fbuffer {
-	const char *name;
+	const char *path;
 	char *data;
 	size_t size;
 };
 
-struct fbuffer *fbuffer_from(const char *filename);
+struct fbuffer *fbuffer_from(const char *path);
 
 void fbuffer_destroy(struct fbuffer *buffer);
 

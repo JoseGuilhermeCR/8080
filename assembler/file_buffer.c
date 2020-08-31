@@ -5,10 +5,11 @@
 #include "file_buffer.h"
 
 /* Reads a file and put it into the buffer. If any error occurs, NULL is returned */
-struct fbuffer *fbuffer_from(const char *filename)
+/*TODO: Beautify error handling... less duplicated ifs... */
+struct fbuffer *fbuffer_from(const char *path)
 {
 	struct fbuffer *buffer = malloc(sizeof(struct fbuffer));
-	FILE *file = fopen(filename, "r");
+	FILE *file = fopen(path, "r");
 	size_t size;
 
 	if (!buffer)
@@ -32,7 +33,7 @@ struct fbuffer *fbuffer_from(const char *filename)
 		return NULL;
 	}
 
-	buffer->name = filename;
+	buffer->path = path;
 	buffer->size = size;
 
 	fread(buffer->data, 1, buffer->size + 1, file);
@@ -54,14 +55,23 @@ void fbuffer_destroy(struct fbuffer *buffer)
  * If the file is not found or new buffer can't be allocated,
  * returns false.
  * 
- * TODO: The path to the file should be relative to the main .asm file, not
- * to the assembler.
- *
+ * TODO: Check if filename doesn't already contain a full path.
  * */
 bool fbuffer_include(struct fbuffer *buffer, const char *filename, size_t pos)
 {
-	FILE *file = fopen(filename, "r");
+	char *path = malloc(strlen(filename) + strlen(buffer->path));
+
+	if (!path)
+		return false;
+
+	const size_t last_dash = (size_t)(strrchr(buffer->path, '/') - buffer->path) + 1;
+	memcpy(path, buffer->path, last_dash);
+	memcpy(path + last_dash, filename, strlen(filename));
+
+	FILE *file = fopen(path, "r");
 	size_t size;
+
+	free(path);
 
 	if (!file)
 		return false;
