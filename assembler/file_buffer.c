@@ -140,7 +140,7 @@ bool fbuffer_replace(struct fbuffer *buffer, const char *string, const char *rep
 		unsigned replacements = 0;
 		start = buffer->data + pos;
 		while (start + str_len < buffer->data + buffer->size
-				&& (start = (strstr(start, string))))
+				&& (start = strstr(start, string)))
 		{
 			++replacements;
 			start += str_len;
