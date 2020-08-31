@@ -37,7 +37,7 @@ bool preprocess(struct fbuffer *buffer)
 
 	while ((directive_beg = strstr(buffer->data, "#")) && success)
 	{
-		const size_t directive_pos = directive_beg - buffer->data;
+		const size_t directive_pos = (size_t)(directive_beg - buffer->data);
 
 		/* Get the directive line and erase the line from the buffer. */
 		size_t i = 0; /* Also represents the size of the line. */

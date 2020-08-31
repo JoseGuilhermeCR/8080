@@ -21,7 +21,7 @@ struct fbuffer *fbuffer_from(const char *filename)
 	}
 
 	fseek(file, 0, SEEK_END);
-	size = ftell(file);
+	size = (size_t)ftell(file);
 	fseek(file, 0, SEEK_SET);
 
 	buffer->data = malloc(size + 1);
@@ -67,7 +67,7 @@ bool fbuffer_include(struct fbuffer *buffer, const char *filename, size_t pos)
 		return false;
 
 	fseek(file, 0, SEEK_END);
-	size = ftell(file);
+	size = (size_t)ftell(file);
 	fseek(file, 0, SEEK_SET);
 
 	char *new_data = malloc(buffer->size + size + 1);
@@ -164,7 +164,7 @@ bool fbuffer_replace(struct fbuffer *buffer, const char *string, const char *rep
 				&& (start = strstr(start, string)))
 		{
 			/* Write everything up to the replacement. */
-			memcpy(new_data_off + (last_start - buffer->data), last_start, start - last_start);
+			memcpy(new_data_off + (last_start - buffer->data), last_start, (size_t)(start - last_start));
 			/* Write the replacement. */
 			memcpy(new_data_off + (start - buffer->data), replacement, rep_len);
 
@@ -176,7 +176,7 @@ bool fbuffer_replace(struct fbuffer *buffer, const char *string, const char *rep
 		}
 
 		/* Copy rest of buffer. */
-		memcpy(new_data_off + (last_start - buffer->data), last_start, buffer->size - (last_start - buffer->data));
+		memcpy(new_data_off + (last_start - buffer->data), last_start, buffer->size - (size_t)(last_start - buffer->data));
 
 		new_data[new_size] = '\0';
 
