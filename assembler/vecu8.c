@@ -64,7 +64,12 @@ bool vecu8_grow(struct vecu8 *vec)
 		vec->elements = malloc(sizeof(unsigned char) * vec->capacity);
 
 		if (!vec->elements)
+		{
+			/* Just leave the vector as it is.
+			 * It won't grow. */
+			vec->elements = hold_ptr;
 			return false;
+		}
 
 		/* Copy old elements to newly allocated memory. */
 		for (size_t i = 0; i != vec->size; ++i)
