@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "file_buffer.h"
+#include "error.h"
 
 /* Reads a file and put it into the buffer. If any error occurs, NULL is returned */
 /*TODO: Beautify error handling... less duplicated ifs... */
@@ -13,10 +14,14 @@ struct fbuffer *fbuffer_from(const char *path)
 	size_t size;
 
 	if (!buffer)
+	{
+		ALLOC_ERROR();
 		return NULL;
+	}
 
 	if (!file)
 	{
+		ALLOC_ERROR();
 		free(buffer);
 		return NULL;
 	}
@@ -28,6 +33,7 @@ struct fbuffer *fbuffer_from(const char *path)
 	buffer->data = malloc(size + 1);
 	if (!buffer->data)
 	{
+		ALLOC_ERROR();
 		free(buffer);
 		fclose(file);
 		return NULL;
@@ -62,7 +68,10 @@ bool fbuffer_include(struct fbuffer *buffer, const char *filename, size_t pos)
 	char *path = malloc(strlen(filename) + strlen(buffer->path));
 
 	if (!path)
+	{
+		ALLOC_ERROR();
 		return false;
+	}
 
 	const size_t last_dash = (size_t)(strrchr(buffer->path, '/') - buffer->path) + 1;
 	memcpy(path, buffer->path, last_dash);
@@ -74,7 +83,10 @@ bool fbuffer_include(struct fbuffer *buffer, const char *filename, size_t pos)
 	free(path);
 
 	if (!file)
+	{
+		ERROR("[FILE_BUFFER] Failed to open included file.\n");
 		return false;
+	}
 
 	fseek(file, 0, SEEK_END);
 	size = (size_t)ftell(file);
@@ -83,6 +95,7 @@ bool fbuffer_include(struct fbuffer *buffer, const char *filename, size_t pos)
 	char *new_data = malloc(buffer->size + size + 1);
 	if (!new_data)
 	{
+		ALLOC_ERROR();
 		fclose(file);
 		return false;
 	}
@@ -107,10 +120,12 @@ bool fbuffer_include(struct fbuffer *buffer, const char *filename, size_t pos)
 
 bool fbuffer_replace(struct fbuffer *buffer, const char *string, const char *replacement, size_t pos)
 {
-	/* Won't replace two things that are equal.
-	 * TODO: This can or can not be an error. */
+	/* Won't replace two things that are equal. */
 	if (strcmp(string, replacement) == 0)
-		return false;
+	{
+		WARNING("[FILE_BUFFER] Trying to replace equal strings.\n");
+		return true;
+	}
 
 	const size_t str_len = strlen(string);
 	const size_t rep_len = strlen(replacement);
@@ -144,7 +159,7 @@ bool fbuffer_replace(struct fbuffer *buffer, const char *string, const char *rep
 
 		return true;
 	}
-	else /* Needs more memory to fit the new characters. TODO*/
+	else
 	{
 		/* Count the amount of replacements we'll have to make. */
 		unsigned replacements = 0;
@@ -156,14 +171,15 @@ bool fbuffer_replace(struct fbuffer *buffer, const char *string, const char *rep
 			start += str_len;
 		}
 
-		printf("%i replacements need to be made!\n", replacements);
-
 		/* Allocate enough memory to fit everything. */
 		const size_t new_size = buffer->size + (replacements * rep_len);
 		char *new_data = malloc(new_size + 1);
 
 		if (!new_data)
+		{
+			ALLOC_ERROR();
 			return false;
+		}
 
 		char *new_data_off = new_data;
 		char *last_start = buffer->data;

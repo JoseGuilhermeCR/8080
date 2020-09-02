@@ -4,6 +4,7 @@
 
 #include "preprocessor.h"
 #include "string_manipulation.h"
+#include "error.h"
 
 /* TODO: Maybe we could also use a smaller buffer by removing
  * the space used to store empty space. We just need byte to
@@ -72,6 +73,15 @@ bool preprocess(struct fbuffer *buffer)
 		}
 	}
 
+	if (!success)
+	{
+		ERROR("[PREPROCESSOR] Error while processing: \"%s\"\n", directive_line);
+	}
+	else
+	{
+		SUCCESS("[PREPROCESSOR] Completed.\n");
+	}
+
 	return success;
 }
 
@@ -115,7 +125,10 @@ bool preprocess_define(struct fbuffer *buffer, const char *line,
 	string = get_next_word(line, line_size, 7);
 
 	if (!string)
+	{
+		ERROR("[PREPROCESSOR] Invalid #define.\n");
 		return result;
+	}
 
 	/* The replacement starts at the next non space char and only ends at the
 	 * end of the line. */
@@ -126,6 +139,7 @@ bool preprocess_define(struct fbuffer *buffer, const char *line,
 	/* For now, don't allow empty defines. */
 	if (*replacement == '\0')
 	{
+		ERROR("[PREPROCESSOR] Empty #define not allowed.\n");
 		free(string);
 		return result;
 	}

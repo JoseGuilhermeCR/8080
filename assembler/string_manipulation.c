@@ -1,3 +1,5 @@
+#include <stdarg.h>
+#include <stdio.h>
 #include <ctype.h>
 
 #include "string_manipulation.h"
@@ -68,4 +70,16 @@ char *get_next_word(const char *line, size_t size, size_t pos)
 	}
 
 	return word;
+}
+
+void cfprintf(FILE *stream, const char *color, const char* fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+
+	fprintf(stream, color);
+	vfprintf(stream, fmt, ap);
+	fprintf(stream, ANSI_RESET);
+
+	va_end(ap);
 }

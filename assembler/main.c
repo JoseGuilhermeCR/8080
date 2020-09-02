@@ -14,22 +14,22 @@
  * arithmetic_value can also be a solvable expression during assembly.
  * */
 
+#include "error.h"
+
 int main(int argc, char** argv)
 {
 	if (argc < 2)
+	{
+		ERROR("[8080_ASSEMBLER] You need to specify at least one file.\n");
 		return 1;
+	}
 
 	struct fbuffer *buffer = fbuffer_from(argv[1]);
-
 	if (!buffer)
 		return 1;
 
-	if (preprocess(buffer))
-		printf("\033[38;2;0;255;0mPreprocessor Finished!\033[0m\n");
-	else
-		printf("\033[38;2;255;0;0mPreprocessor Failed! Stopping...\033[0m\n");
+	preprocess(buffer);
 		
-	printf("PREPROCESSED:\n%s\n", buffer->data);
 //	assemble(fbuffer);
 
 	fbuffer_destroy(buffer);
