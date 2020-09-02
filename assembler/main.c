@@ -14,6 +14,7 @@
  * arithmetic_value can also be a solvable expression during assembly.
  * */
 
+#include "assembler.h"
 #include "error.h"
 
 int main(int argc, char** argv)
@@ -30,8 +31,9 @@ int main(int argc, char** argv)
 
 	preprocess(buffer);
 		
-//	assemble(fbuffer);
+	struct assembler_out out = assemble(buffer);
 
+	assembler_destroy_out(&out);
 	fbuffer_destroy(buffer);
 
 	return 0;
