@@ -207,6 +207,7 @@ bool fbuffer_replace(struct fbuffer *buffer, const char *string, const char *rep
 		new_data[new_size] = '\0';
 
 		free(buffer->data);
+		buffer->size = new_size;
 		buffer->data = new_data;
 
 		return true;
