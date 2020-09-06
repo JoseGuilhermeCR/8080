@@ -1,12 +1,16 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "file_buffer.h"
 #include "error.h"
 
 /* Reads a file and put it into the buffer. If any error occurs, NULL is returned */
-/*TODO: Beautify error handling... less duplicated ifs... */
+/* TODO: Beautify error handling... less duplicated ifs... 
+ *
+ * BUG: If you pass in a directory it will complaing about allocating memory. That happens
+ * because you can fopen apparently returns non NULL. It tries to allocate 0 bytes and
+ * falls into !buffer->data if.*/
 struct fbuffer *fbuffer_from(const char *path)
 {
 	struct fbuffer *buffer = malloc(sizeof(struct fbuffer));
@@ -21,7 +25,7 @@ struct fbuffer *fbuffer_from(const char *path)
 
 	if (!file)
 	{
-		ALLOC_ERROR();
+		ERROR("[FILE_BUFFER] Specified file (\"%s\") could not be opened.", path);
 		free(buffer);
 		return NULL;
 	}
@@ -41,7 +45,7 @@ struct fbuffer *fbuffer_from(const char *path)
 
 	buffer->path = path;
 	buffer->size = size;
-
+	
 	fread(buffer->data, 1, buffer->size + 1, file);
 	buffer->data[buffer->size] = '\0';
 
@@ -55,6 +59,84 @@ void fbuffer_destroy(struct fbuffer *buffer)
 	free(buffer->data);
 	free(buffer);
 	buffer = NULL;
+}
+
+/* Removes empty lines and unnecessary spaces
+ * from the buffer. 
+ * FIXME: Ugly code here, needs refactor! */
+void fbuffer_optimize(struct fbuffer *buffer)
+{
+	char *data_tmp = malloc(buffer->size + 1);
+	size_t new_size = 0;
+	size_t i = 0;
+
+	if (!data_tmp)
+		goto error;
+	
+	/* Remove unnecessary spaces in every line. */
+	bool in_quotes = false;
+	while (i < buffer->size + 1)
+	{
+		if (!isspace(buffer->data[i]) || buffer->data[i] == '\n' || in_quotes)
+		{
+			data_tmp[new_size++] = buffer->data[i];
+
+			if (buffer->data[i] == '"')
+				in_quotes = !in_quotes;
+		}
+		else if (isspace(buffer->data[i]))
+		{
+			/* This is a space. Keep going until the next character
+			 * is not a space so that we eliminate the extra spaces. */
+			while (i < buffer->size
+					&& (isspace(buffer->data[i + 1]) && buffer->data[i + 1] != '\n'))
+				++i;
+			data_tmp[new_size++] = buffer->data[i];
+		}
+
+		++i;
+	}
+	data_tmp[new_size] = '\0';
+	
+	free(buffer->data);
+	buffer->data = data_tmp;
+	buffer->size = new_size;
+
+	/* Reset variables for next step. */
+	data_tmp = malloc(buffer->size + 1);
+	new_size = 0;
+	i = 0;
+
+	if (!data_tmp)
+		goto error;
+
+	bool empty_line = true;
+	while (i < buffer->size + 1)
+	{
+		if (!isspace(buffer->data[i]))
+			empty_line = false;
+
+		if (!empty_line)
+		{
+			data_tmp[new_size++] = buffer->data[i];
+		}
+
+		/* After a new line, reset. */
+		if (buffer->data[i] == '\n')
+			empty_line = true;
+
+		++i;
+	}
+	data_tmp[new_size] = '\0';
+
+	free(buffer->data);
+	buffer->data = data_tmp;
+	buffer->size = new_size;
+
+	return;
+error:
+	ALLOC_ERROR();
+	return;
 }
 
 /* Includes another file in the buffer at given position and returns true.
@@ -118,6 +200,7 @@ bool fbuffer_include(struct fbuffer *buffer, const char *filename, size_t pos)
 	return true;
 }
 
+/* Replaces all occurrences of string with replacement beginning from pos. */
 bool fbuffer_replace(struct fbuffer *buffer, const char *string, const char *replacement, size_t pos)
 {
 	/* Won't replace two things that are equal. */
@@ -194,7 +277,7 @@ bool fbuffer_replace(struct fbuffer *buffer, const char *string, const char *rep
 			/* Write the replacement. */
 			memcpy(new_data_off + (start - buffer->data), replacement, rep_len);
 
-			 /* Next time write to the position the replaced word ended. */
+			/* Next time write to the position the replaced word ended. */
 			new_data_off += (rep_len - str_len);
 
 			start += str_len;

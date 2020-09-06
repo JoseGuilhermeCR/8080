@@ -2,6 +2,8 @@
 
 #include "preprocessor.h"
 #include "file_buffer.h"
+#include "assembler.h"
+#include "error.h"
 
 /* My assembly:
  * Lines starting with a . must be a valid assembler command.
@@ -13,9 +15,6 @@
  * [label]: mnemonic register arithmetic_value
  * arithmetic_value can also be a solvable expression during assembly.
  * */
-
-#include "assembler.h"
-#include "error.h"
 
 int main(int argc, char** argv)
 {
@@ -30,7 +29,8 @@ int main(int argc, char** argv)
 		return 1;
 
 	preprocess(buffer);
-		
+	fbuffer_optimize(buffer);	
+	printf("%s\n", buffer->data);
 	struct assembler_out out = assemble(buffer);
 
 	assembler_destroy_out(&out);
